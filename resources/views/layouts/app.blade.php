@@ -37,7 +37,9 @@
     <!-- RIGHT -->
     <div class="flex items-center gap-6">
         @auth
-            <span class="opacity-80">{{ auth()->user()->name }}</span>
+            <a href="{{ route('profile.edit') }}" style="color:white; margin-right:15px;">
+                <span class="opacity-80">{{ auth()->user()->name }}</span>            
+            </a>
 
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
