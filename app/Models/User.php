@@ -33,6 +33,8 @@ class User extends Authenticatable
         'remember_token',
     ];
 
+    protected $primaryKey = 'user_id';
+
     /**
      * Get the attributes that should be cast.
      *
@@ -45,4 +47,20 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function contents()
+    {
+        return $this->hasMany(Content::class,'user_id','user_id');
+    }
+
+    public function templates()
+    {
+        return $this->hasMany(StageTemplate::class,'created_by','user_id');
+    }
+
+    public function simulations()
+    {
+        return $this->hasMany(Simulation::class,'user_id','user_id');
+    }
+
 }
