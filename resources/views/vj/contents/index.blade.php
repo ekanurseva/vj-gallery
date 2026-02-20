@@ -25,6 +25,41 @@
         <a href="{{ route('vj.contents.create') }}" class="bg-cyan-400 text-[#0A192F] px-6 py-2 rounded-lg font-semibold hover:bg-cyan-300 transition">
             + Tambah Karya
         </a>
+
+        {{-- FILTER --}}
+        <form method="GET" action="{{ route('vj.contents.index') }}" id="filterForm">
+            <input type="text" name="search" value="{{ request('search') }}" id="searchInput" placeholder="Cari judul..." class="flex-2 bg-[#0A192F] border border-white/20 rounded-lg px-4 py-2 text-white">
+
+            <select name="category_id" id="kategoriFilter" class="bg-[#0A192F] border border-white/20 rounded-lg ps-4 pe-8 py-2 text-white">
+                <option value="">Semua Kategori</option>
+                @foreach($categories as $cat)
+                    <option value="{{ $cat->category_id }}"
+                        {{ request('category_id') == $cat->category_id ? 'selected':'' }}>
+                        {{ $cat->name }}
+                    </option>
+                @endforeach
+            </select>            
+        </form>
+
+        <script>
+            const kategoriFilter = document.getElementById('kategoriFilter');
+            const searchInput = document.getElementById('searchInput');
+            const form = document.getElementById('filterForm');
+
+            // Auto submit saat kategori berubah
+            kategoriFilter.addEventListener('change', function() {
+                form.submit();
+            });
+
+            // Auto submit saat mengetik (dengan delay supaya tidak spam)
+            let typingTimer;
+            searchInput.addEventListener('keyup', function() {
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    form.submit();
+                }, 500); // delay 500ms
+            });
+        </script>
     </div>
 
     <div class="grid-karya">

@@ -11,13 +11,26 @@ use FFMpeg\FFProbe;
 
 class VjContentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $contents = Content::where('user_id', auth()->id())
-                    ->latest()
-                    ->get();
+        $categories = Category::all();
 
-        return view('vj.contents.index', compact('contents'));
+        $query = Content::with('category')
+            ->where('user_id', auth()->id());
+
+        // SEARCH
+        if ($request->filled('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // FILTER KATEGORI
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        $contents = $query->latest()->get();
+
+        return view('vj.contents.index', compact('contents','categories'));
     }
 
     public function create()
