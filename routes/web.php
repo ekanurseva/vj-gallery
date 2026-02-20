@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\ContentManagementController;
 use App\Http\Controllers\Admin\AdminKaryaController;
 use App\Http\Controllers\Vj\VjContentController;
+use App\Http\Controllers\GalleryController;
 
 Route::get('/', function () {
     return view('welcome');
@@ -114,5 +115,11 @@ Route::middleware(['auth'])->prefix('vj')->group(function(){
         ->name('vj.contents.destroy');
 
 });
+
+Route::get('/gallery', [GalleryController::class,'index'])
+    ->name('gallery.index');
+
+Route::get('/gallery/download/{content}', [GalleryController::class,'download'])
+    ->name('gallery.download');
 
 require __DIR__.'/auth.php';
