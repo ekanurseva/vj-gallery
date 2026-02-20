@@ -8,9 +8,10 @@ class Category extends Model
 {
     protected $primaryKey = 'category_id';
 
-    public function contents()
-    {
-        return $this->hasMany(Content::class,'category_id','category_id');
-    }
-
+    protected $fillable = [
+        'name',
+        'description',
+        'target_type',
+        'is_system'
+    ];
 }

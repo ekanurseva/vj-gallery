@@ -32,7 +32,7 @@ return new class extends Migration
             $table->integer('duration')->nullable();
             $table->bigInteger('file_size')->nullable();
 
-            $table->enum('status',['approved','rejected'])->default('approved');
+            $table->enum('status',['pending','approved','rejected'])->default('pending');
 
             $table->timestamps();
         });

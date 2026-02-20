@@ -5,15 +5,15 @@
 <div class="px-20 py-12">
 
     @if(session('success'))
-        <div style="
-            background:#16a34a;
-            color:white;
-            padding:12px;
-            border-radius:8px;
-            margin-bottom:20px;
-            text-align:center;
+        <div style="background:#16a34a; color:white; padding:12px; border-radius:8px; margin-bottom:20px; text-align:center;
         ">
             {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div style="background:#dc2626;color:white;padding:12px;border-radius:8px;margin-bottom:20px;text-align:center;">
+            {{ session('error') }}
         </div>
     @endif
 
@@ -71,7 +71,6 @@
                 }, 500); // delay 500ms
             });
         </script>
-
 
         <!-- Tabel -->
         <div class="overflow-x-auto">
