@@ -20,7 +20,7 @@ return new class extends Migration
             $table->integer('canvas_width');
             $table->integer('canvas_height');
 
-            $table->enum('background_type',['color','video','all']);
+            $table->enum('background_type',['color','video','image']);
             $table->string('background_path')->nullable();
             $table->string('audio_path')->nullable();
             $table->string('layout_json_path')->nullable();

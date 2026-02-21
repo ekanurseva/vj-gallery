@@ -8,6 +8,8 @@ use App\Http\Controllers\Admin\ContentManagementController;
 use App\Http\Controllers\Admin\AdminKaryaController;
 use App\Http\Controllers\Vj\VjContentController;
 use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\Admin\StageTemplateController;
+
 
 Route::get('/', function () {
     return view('welcome');
@@ -121,5 +123,21 @@ Route::get('/gallery', [GalleryController::class,'index'])
 
 Route::get('/gallery/download/{content}', [GalleryController::class,'download'])
     ->name('gallery.download');
+
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware(['auth'])
+    ->group(function () {
+
+    Route::resource('stage_templates', StageTemplateController::class);
+
+    Route::get('stage_templates/{stage_template}/builder',
+        [StageTemplateController::class, 'builder'])
+        ->name('stage_templates.builder');
+
+    Route::post('stage_templates/{stage_template}/save-layout',
+        [StageTemplateController::class, 'saveLayout'])
+        ->name('stage_templates.saveLayout');
+});
 
 require __DIR__.'/auth.php';
