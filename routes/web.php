@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\AdminKaryaController;
 use App\Http\Controllers\Vj\VjContentController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Admin\StageTemplateController;
+use App\Http\Controllers\SimulationController;
 
 
 Route::get('/', function () {
@@ -139,5 +140,25 @@ Route::prefix('admin')
         [StageTemplateController::class, 'saveLayout'])
         ->name('stage_templates.saveLayout');
 });
+
+Route::get('/simulations/create/{template}', 
+    [SimulationController::class,'create']
+)->name('simulations.create');
+
+Route::post('/simulations/store/{template}', 
+    [SimulationController::class,'store']
+)->name('simulations.store');
+
+Route::get('/simulations/{simulation}/builder',
+    [SimulationController::class,'builder']
+)->name('simulations.builder');
+
+Route::post('/simulations/{simulation}/save-layout',
+    [SimulationController::class,'saveLayout']
+)->name('simulations.saveLayout');
+
+Route::post('/simulations/{simulation}/save-contents',
+    [App\Http\Controllers\SimulationController::class, 'saveContents']
+)->name('simulations.saveContents');
 
 require __DIR__.'/auth.php';

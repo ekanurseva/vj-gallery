@@ -21,7 +21,8 @@ class SimulationContent extends Model
         'height',
         'opacity',
         'rotation',
-        'scale'
+        'scale',
+        'slot_id'
     ];
 
     public function content()

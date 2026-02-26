@@ -59,6 +59,15 @@
         .preview-box:hover video {
             transform:scale(1.05);
         }
+
+        .slot {
+            pointer-events: auto;
+            opacity: 1 !important;
+        }
+
+        .stage-content {
+            pointer-events: auto;
+        }
     </style>
 </head>
 

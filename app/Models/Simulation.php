@@ -7,6 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 class Simulation extends Model
 {
     protected $primaryKey = 'simulation_id';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
+    protected $fillable = [
+        'template_id',
+        'user_id',
+        'title',
+        'description',
+        'layout_json',
+        'canvas_width',
+        'canvas_height',
+        'is_public',
+        'status'
+    ];
 
     public function template()
     {
@@ -18,8 +32,12 @@ class Simulation extends Model
         return $this->belongsTo(User::class,'user_id','user_id');
     }
 
-    public function simulationContents()
+    public function contents()
     {
-        return $this->hasMany(SimulationContent::class,'simulation_id','simulation_id');
+        return $this->hasMany(
+            SimulationContent::class,
+            'simulation_id',
+            'simulation_id'
+        );
     }
 }
