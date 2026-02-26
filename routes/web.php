@@ -161,4 +161,8 @@ Route::post('/simulations/{simulation}/save-contents',
     [App\Http\Controllers\SimulationController::class, 'saveContents']
 )->name('simulations.saveContents');
 
+Route::post('/simulations/upload-content', 
+    [SimulationController::class, 'uploadContent']
+)->name('simulations.uploadContent');
+
 require __DIR__.'/auth.php';

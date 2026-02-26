@@ -27,7 +27,7 @@
         {{--Sidebar kanan--}}
         <div class="w-64 bg-gray-800 p-4 overflow-y-auto">
             <h2 class="text-lg font-semibold mb-4">Available Contents</h2>
-            @foreach(\App\Models\Content::all() as $content)
+            @foreach($availableContents as $content)
                 <div class="bg-gray-700 p-2 mb-3 rounded cursor-pointer content-item"
                     data-id="{{ $content->content_id }}"
                     data-type="{{ $content->type }}"
@@ -158,6 +158,7 @@
 <script>
     window.editorConfig = {
         saveUrl: "{{ route('simulations.saveContents', $simulation->simulation_id) }}",
+        uploadUrl: "{{ route('simulations.uploadContent') }}",
         csrf: "{{ csrf_token() }}"
     };
 </script>

@@ -1,8 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
 
-    /* ===============================
-       GLOBAL STATE
-    =============================== */
+    /* GLOBAL STATE */
     const stage = document.getElementById('stage');
     const timeline = document.getElementById('timeline');
     const pixelsPerSecond = 50;
@@ -13,9 +11,7 @@ document.addEventListener('DOMContentLoaded', function () {
     let startTimestamp = null;
 
 
-    /* ===============================
-       DRAG DARI SIDEBAR
-    =============================== */
+    /* DRAG DARI SIDEBAR */
     interact('.slot').unset();
 
     interact('.content-item').draggable({
@@ -93,9 +89,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* ===============================
-       DRAG & RESIZE STAGE CONTENT
-    =============================== */
+    /* DRAG & RESIZE STAGE CONTENT */
     function enableInteract(target){
         interact(target)
             .draggable({
@@ -128,9 +122,7 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.stage-content').forEach(enableInteract);
 
 
-    /* ===============================
-       TIMELINE
-    =============================== */
+    /* TIMELINE */
     function renderTimeline(){
 
         const container = document.getElementById('timelineTracks');
@@ -227,9 +219,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /* ===============================
-       PLAYBACK ENGINE
-    =============================== */
+    /* PLAYBACK ENGINE */
     function updateStageVisibility(time){
 
         document.querySelectorAll('.stage-content').forEach(el => {
@@ -323,7 +313,6 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('video,audio').forEach(m=>m.pause());
     });
 
-
     function seekTo(time){
 
         currentTime = Math.max(0,time);
@@ -342,7 +331,6 @@ document.addEventListener('DOMContentLoaded', function () {
             startTimestamp = performance.now() - (currentTime * 1000);
         }
     }
-
 
     async function unlockAllMedia(){
         const media = document.querySelectorAll('video,audio');
@@ -587,13 +575,184 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     });
+
+    /* DELETE STAGE CONTENT */
+    function deleteStageContent(element){
+
+        if(isPlaying){
+            isPlaying = false;
+            cancelAnimationFrame(animationFrame);
+        }
+
+        const video = element.querySelector('video');
+        if(video){
+            video.pause();
+        }
+
+        element.remove();
+
+        refreshLayerPanel();
+        autoReindexLayers();
+        renderTimeline();
+    }
+
+    /* DELETE AUDIO TRACK */
+    function deleteAudioTrack(element){
+
+        if(isPlaying){
+            isPlaying = false;
+            cancelAnimationFrame(animationFrame);
+        }
+
+        const audio = element.querySelector('audio');
+        if(audio){
+            audio.pause();
+        }
+
+        element.remove();
+
+        renderTimeline();
+    }
+
+    document.addEventListener('click', function(e){
+
+        // DELETE DARI LAYER PANEL
+        if(e.target.classList.contains('delete-layer')){
+
+            const layerItem = e.target.closest('.layer-item');
+            const contentId = layerItem.dataset.contentId;
+
+            const stageEl = document.querySelector(
+                `.stage-content[data-content-id="${contentId}"]`
+            );
+
+            if(stageEl){
+                deleteStageContent(stageEl);
+            }
+        }
+
+        // DELETE AUDIO
+        if(e.target.classList.contains('delete-audio')){
+            const el = e.target.closest('.audio-item');
+            if(el){
+                deleteAudioTrack(el);
+            }
+        }
+
+    });
+
+    function initSlotUpload() {
+
+        document.querySelectorAll('.slot').forEach(slot => {
+
+            slot.addEventListener('dragover', e => {
+                e.preventDefault();
+                slot.classList.add('bg-green-500/30');
+            });
+
+            slot.addEventListener('dragleave', () => {
+                slot.classList.remove('bg-green-500/30');
+            });
+
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                slot.classList.remove('bg-green-500/30');
+
+                const file = e.dataTransfer.files[0];
+                if (!file) return;
+
+                uploadFileToSlot(file, slot);
+            });
+
+            // Klik untuk upload
+            slot.addEventListener('click', () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.onchange = () => {
+                    uploadFileToSlot(input.files[0], slot);
+                };
+                input.click();
+            });
+
+        });
+    }
+
+    function uploadFileToSlot(file, slot) {
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch(window.editorConfig.uploadUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'X-CSRF-TOKEN': window.editorConfig.csrf
+            },
+            body: formData
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.text().then(text => {
+                    console.error("SERVER ERROR RAW:", text);
+                    throw new Error("Server error");
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            renderUploadedContent(data, slot);
+        })
+        .catch(err => {
+            console.error("Upload error:", err);
+            alert("Upload gagal");
+        });
+    }
+
+    function renderUploadedContent(content, slot) {
+
+        const div = document.createElement('div');
+        div.classList.add('stage-content', 'absolute', 'group');
+
+        div.dataset.contentId = content.id;
+        div.dataset.title = content.title;
+        div.dataset.type = content.type;
+        div.dataset.slotId = slot.dataset.id;
+        div.dataset.layerOrder = 1;
+        div.dataset.startTime = 0;
+        div.dataset.duration = 10;
+
+        div.style.left = slot.style.left;
+        div.style.top = slot.style.top;
+        div.style.width = slot.style.width;
+        div.style.height = slot.style.height;
+        div.style.zIndex = 1;
+        div.style.border = "2px solid red";
+
+        if (content.type === 'image') {
+            div.innerHTML = `<img src="/storage/${content.path}" 
+                style="width:100%;height:100%;object-fit:cover;">`;
+        }
+
+        if (content.type === 'video') {
+            div.innerHTML = `<video src="/storage/${content.path}" 
+                style="width:100%;height:100%;" preload="auto"></video>`;
+        }
+
+        if (content.type === 'audio') {
+            div.innerHTML = `<audio src="/storage/${content.path}" preload="auto"></audio>`;
+        }
+
+        document.getElementById('stage').appendChild(div);
+
+        refreshLayerPanel();
+        renderTimeline();
+    }
     
-    /* ===============================
-       INIT
-    =============================== */
+    /* INIT */
     refreshLayerPanel();
     autoReindexLayers();
     renderTimeline();
     updateStageVisibility(0);
+    initSlotUpload();
 
 });

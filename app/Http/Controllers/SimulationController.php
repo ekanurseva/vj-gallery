@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\StageTemplate;
 use App\Models\Simulation;
 use App\Models\SimulationContent;
+use App\Models\Content;
+use Illuminate\Support\Facades\Storage;
 
 class SimulationController extends Controller
 {
@@ -51,9 +53,15 @@ class SimulationController extends Controller
             ->filter(fn($item) =>
                 ($item->content->type ?? null) === 'audio'
             );
+        
+        $availableContents = Content::where(function($q){
+            $q->where('status','approved')
+            ->orWhere('user_id', auth()->id());
+        })->get();
 
         return view('simulations.builder', compact(
             'simulation',
+            'availableContents',
             'layout',
             'visualContents',
             'audioContents'
@@ -116,5 +124,42 @@ class SimulationController extends Controller
         }
 
         return response()->json(['status' => 'success']);
+    }
+
+    public function uploadContent(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|max:51200'
+        ]);
+
+        $file = $request->file('file');
+
+        $path = $file->store('contents', 'public');
+
+        $mime = $file->getMimeType();
+        $type = 'image';
+
+        if (str_contains($mime, 'video')) {
+            $type = 'video';
+        } elseif (str_contains($mime, 'audio')) {
+            $type = 'audio';
+        }
+
+        $content = Content::create([
+            'user_id' => auth()->id(), 
+            'category_id' => 1,      
+            'title' => $file->getClientOriginalName(),
+            'file_path' => $path,
+            'type' => $type,
+            'file_size' => $file->getSize(),
+            'status' => 'pending'
+        ]);
+
+        return response()->json([
+            'id' => $content->content_id,
+            'title' => $content->title,
+            'path' => $content->file_path,
+            'type' => $content->type
+        ]);
     }
 }

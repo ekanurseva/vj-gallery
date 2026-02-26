@@ -68,6 +68,19 @@
         .stage-content {
             pointer-events: auto;
         }
+
+        .media-drop-zone {
+            border: 2px dashed #888;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .media-drop-zone.dragover {
+            border-color: #00ff88;
+            background: rgba(0,255,136,0.1);
+        }
     </style>
 </head>
 
