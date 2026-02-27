@@ -2,7 +2,7 @@
 
 @section('content')
 
-<div class="flex items-center justify-between px-20 py-24">
+<div class="flex items-center justify-between px-20 py-4">
 
     <!-- LEFT TEXT -->
     <div class="max-w-xl">
@@ -10,7 +10,7 @@
             Ciptakan dan Eksplorasi <br> Panggung Impianmu!
         </h1>
 
-        <a href="/vj/simulation"
+        <a href="/admin/stage_templates"
            class="inline-block mt-8 bg-cyan-400 text-[#0A192F] px-6 py-3 rounded-lg font-semibold hover:bg-cyan-300 transition">
             Start
         </a>
@@ -19,7 +19,7 @@
     <!-- RIGHT IMAGE -->
     <div>
         <img src="{{ asset('images/vj-illustration.png') }}"
-             class="w-[450px] opacity-90">
+             class="w-[600px] h-[500px] opacity-90">
     </div>
 
 </div>
