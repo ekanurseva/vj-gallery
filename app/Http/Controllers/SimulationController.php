@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\Storage;
 
 class SimulationController extends Controller
 {
+    public function index()
+    {
+        $simulations = Simulation::where('user_id', auth()->id())
+            ->with(['simulationContents.content'])
+            ->latest()
+            ->get();
+
+        return view('simulations.index', compact('simulations'));
+    }
+    
     public function create($template_id)
     {
         $template = StageTemplate::findOrFail($template_id);
@@ -161,5 +171,18 @@ class SimulationController extends Controller
             'path' => $content->file_path,
             'type' => $content->type
         ]);
+    }
+
+    public function destroy(Simulation $simulation)
+    {
+        if ($simulation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
+        $simulation->delete();
+
+        return redirect()
+            ->route('simulations.index')
+            ->with('success', 'Simulasi berhasil dihapus');
     }
 }

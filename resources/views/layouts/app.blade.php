@@ -101,6 +101,7 @@
                 <a href="/admin/contents" class="hover:text-cyan-400 transition">Konten</a>
                 <a href="/admin/stage_templates" class="hover:text-cyan-400 transition">Template</a>
                 <a href="/admin/karya" class="hover:text-cyan-400 transition">Karya</a>
+                <a href="/simulations" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
             @endif
 
             @if(auth()->user()->role === 'vj')

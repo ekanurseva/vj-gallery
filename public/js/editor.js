@@ -54,9 +54,6 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const existing = stage.querySelector(`.stage-content[data-slot-id="${slotId}"]`);
-        if(existing) existing.remove();
-
         const div = document.createElement('div');
         div.classList.add('stage-content');
         div.dataset.contentId = contentId;

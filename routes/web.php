@@ -145,6 +145,18 @@ Route::get('/simulations/create/{template}',
     [SimulationController::class,'create']
 )->name('simulations.create');
 
+Route::get('/simulations/{simulation}/edit',
+    [SimulationController::class,'edit']
+)->name('simulations.edit');
+
+Route::get('/simulations', 
+    [SimulationController::class,'index']
+)->name('simulations.index');
+
+Route::delete('/simulations/{simulation}', 
+    [SimulationController::class,'destroy']
+)->name('simulations.destroy');
+
 Route::post('/simulations/store/{template}', 
     [SimulationController::class,'store']
 )->name('simulations.store');

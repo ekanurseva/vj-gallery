@@ -25,7 +25,7 @@
 
     <div class="flex flex-1">
         {{--Sidebar kanan--}}
-        <div class="w-64 bg-gray-800 p-4 overflow-y-auto">
+        <div class="w-64 bg-gray-800 p-4 max-h-[85vh] overflow-y-auto">
             <h2 class="text-lg font-semibold mb-4">Available Contents</h2>
             @foreach($availableContents as $content)
                 <div class="bg-gray-700 p-2 mb-3 rounded cursor-pointer content-item"
@@ -100,7 +100,7 @@
         </div>
 
         {{--Sidebare kiri--}}
-        <div class="w-64 bg-gray-800 p-4 border-l border-gray-700">
+        <div class="w-64 bg-gray-800 p-4 border-l border-gray-700 max-h-[85vh] overflow-y-auto">
             <h2 class="text-lg font-semibold mb-4">Layers</h2>
 
             <div id="layerPanel" class="space-y-2">
@@ -114,7 +114,7 @@
         <div class="w-64 flex-shrink-0 bg-gray-900 p-4 border-l border-gray-700">
             <h2 class="text-lg font-semibold mb-4">Audio Tracks</h2>
     
-            <div id="audioPanel" class="space-y-2">
+            <div id="audioPanel" class="space-y-2 h-32 overflow-x-auto">
                 @foreach($audioContents as $item)
                     <div class="audio-item bg-gray-700 p-2 rounded cursor-move flex justify-between items-center"
                         data-content-id="{{ $item->content_id }}"

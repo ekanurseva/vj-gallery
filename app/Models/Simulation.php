@@ -40,4 +40,9 @@ class Simulation extends Model
             'simulation_id'
         );
     }
+
+    public function simulationContents()
+    {
+        return $this->hasMany(SimulationContent::class, 'simulation_id', 'simulation_id');
+    }
 }
