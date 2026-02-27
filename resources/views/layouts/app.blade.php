@@ -107,7 +107,7 @@
             @if(auth()->user()->role === 'vj')
                 <a href="/vj/contents" class="hover:text-cyan-400 transition">Konten Karya</a>                
                 <a href="/admin/stage_templates" class="hover:text-cyan-400 transition">Template</a>
-                <a href="/simulation" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
+                <a href="/simulations" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
                 <a href="/gallery" class="hover:text-cyan-400 transition">Gallery Karya</a>
             @endif
         @endauth

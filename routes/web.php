@@ -20,6 +20,43 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::get('/simulations/create/{template}', 
+        [SimulationController::class,'create']
+    )->name('simulations.create');
+
+    Route::get('/simulations/{simulation}/edit',
+        [SimulationController::class,'edit']
+    )->name('simulations.edit');
+
+    Route::get('/simulations', 
+        [SimulationController::class,'index']
+    )->name('simulations.index');
+
+    Route::delete('/simulations/{simulation}', 
+        [SimulationController::class,'destroy']
+    )->name('simulations.destroy');
+
+    Route::post('/simulations/store/{template}', 
+        [SimulationController::class,'store']
+    )->name('simulations.store');
+
+    Route::get('/simulations/{simulation}/builder',
+        [SimulationController::class,'builder']
+    )->name('simulations.builder');
+
+    Route::post('/simulations/{simulation}/save-layout',
+        [SimulationController::class,'saveLayout']
+    )->name('simulations.saveLayout');
+
+    Route::post('/simulations/{simulation}/save-contents',
+        [App\Http\Controllers\SimulationController::class, 'saveContents']
+    )->name('simulations.saveContents');
+
+    Route::post('/simulations/upload-content', 
+        [SimulationController::class, 'uploadContent']
+    )->name('simulations.uploadContent');
+
 });
 
 Route::middleware(['auth', 'role:admin'])->group(function () {
@@ -144,41 +181,5 @@ Route::prefix('admin')
 Route::get('/stage-templates', 
     [StageTemplateController::class, 'publicIndex']
 )->name('stage_templates.index');
-
-Route::get('/simulations/create/{template}', 
-    [SimulationController::class,'create']
-)->name('simulations.create');
-
-Route::get('/simulations/{simulation}/edit',
-    [SimulationController::class,'edit']
-)->name('simulations.edit');
-
-Route::get('/simulations', 
-    [SimulationController::class,'index']
-)->name('simulations.index');
-
-Route::delete('/simulations/{simulation}', 
-    [SimulationController::class,'destroy']
-)->name('simulations.destroy');
-
-Route::post('/simulations/store/{template}', 
-    [SimulationController::class,'store']
-)->name('simulations.store');
-
-Route::get('/simulations/{simulation}/builder',
-    [SimulationController::class,'builder']
-)->name('simulations.builder');
-
-Route::post('/simulations/{simulation}/save-layout',
-    [SimulationController::class,'saveLayout']
-)->name('simulations.saveLayout');
-
-Route::post('/simulations/{simulation}/save-contents',
-    [App\Http\Controllers\SimulationController::class, 'saveContents']
-)->name('simulations.saveContents');
-
-Route::post('/simulations/upload-content', 
-    [SimulationController::class, 'uploadContent']
-)->name('simulations.uploadContent');
 
 require __DIR__.'/auth.php';

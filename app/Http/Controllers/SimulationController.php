@@ -51,6 +51,10 @@ class SimulationController extends Controller
         $simulation = Simulation::with('contents.content')
             ->findOrFail($simulation_id);
 
+        if ($simulation->user_id !== auth()->id()) {
+            abort(403);
+        }
+
         $layout = json_decode($simulation->layout_json, true) ?? [];
 
         $visualContents = $simulation->contents
