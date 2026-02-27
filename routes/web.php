@@ -10,10 +10,14 @@ use App\Http\Controllers\Vj\VjContentController;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Admin\StageTemplateController;
 use App\Http\Controllers\SimulationController;
-
+use App\Http\Controllers\Admin\DashboardController;
 
 Route::get('/', function () {
     return view('landing');
+});
+
+Route::prefix('admin')->middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
 });
 
 Route::middleware('auth')->group(function () {
@@ -57,12 +61,6 @@ Route::middleware('auth')->group(function () {
         [SimulationController::class, 'uploadContent']
     )->name('simulations.uploadContent');
 
-});
-
-Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('/admin/dashboard', function () {
-        return view('admin.dashboard');
-    });
 });
 
 Route::middleware(['auth', 'role:vj'])->group(function () {
