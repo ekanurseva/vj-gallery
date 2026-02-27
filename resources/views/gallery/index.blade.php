@@ -78,7 +78,7 @@
                     <strong>{{ $content->category->name ?? '-' }}</strong> - {{ $content->title }}
                 </div>
 
-                <a href="{{ route('gallery.download',$content->content_id) }}" class="inline-block mt-2 px-3 py-1 bg-green-600 rounded">
+                <a href="{{ route('gallery.download',$content->content_id) }}" class="inline-block ms-2 mt-2 px-3 py-1 bg-green-600 rounded">
                     Download
                 </a>
             </div>
@@ -104,7 +104,13 @@
                         </audio>                
                     </div>
                 @endif
+            </div>
 
+            <div class="mt-4">
+                <h3>
+                    <strong>Deskripsi</strong>
+                </h3>
+                <span> {{ $content->description }} </span>
             </div>
         </div>
 

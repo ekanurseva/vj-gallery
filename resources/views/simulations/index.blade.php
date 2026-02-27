@@ -20,7 +20,7 @@
 
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
         @foreach($simulations as $simulation)
-            <div class="bg-white shadow rounded-lg overflow-hidden">
+            <div class="bg-slate-800 shadow rounded-lg overflow-hidden">
                 @php
                     $slotZero = $simulation->simulationContents
                         ->where('slot', 0)
@@ -28,7 +28,7 @@
                 @endphp
 
                 <div class="flex justify-between p-4">   
-                    <h2 class="font-semibold text-blue-600">
+                    <h2 class="font-semibold text-white-400">
                         {{ $simulation->title }}
                     </h2>             
 
@@ -45,7 +45,7 @@
 
                 </div>
                 
-                <a href="{{ route('simulations.builder', $simulation->simulation_id) }}" class="text-blue-600 text-sm">
+                <a href="{{ route('simulations.builder', $simulation->simulation_id) }}" class="text-white-600 text-sm">
                     <div class="h-40 bg-gray-200 overflow-hidden flex items-center justify-center">
                         @if($slotZero && $slotZero->content)
 

@@ -13,7 +13,7 @@ use App\Http\Controllers\SimulationController;
 
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('landing');
 });
 
 Route::middleware('auth')->group(function () {

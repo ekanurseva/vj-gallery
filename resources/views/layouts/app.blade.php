@@ -91,8 +91,9 @@
 
     <!-- LEFT -->
     <div class="flex items-center gap-10">
-        <div class="text-2xl font-bold tracking-wider">
-            VJ_GALLERY
+        <div class="text-2xl flex items-center font-bold tracking-wider">
+            <img src="{{ asset('images/Gallery-vj.png') }}" alt="Logo VJ Gallery" class="w-20 h-20 object-contain">
+            <span>Gallery</span>
         </div>
 
         @auth

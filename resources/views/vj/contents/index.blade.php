@@ -84,7 +84,7 @@
                     @csrf
                     @method('DELETE')
 
-                    <button class="px-3 py-1 bg-red-500 text-white rounded-md text-sm">
+                    <button class="px-3 py-1 bg-red-500 ms-2 text-white rounded-md text-sm">
                         Hapus
                     </button>
                 </form>
@@ -121,7 +121,13 @@
                         </audio>                
                     </div>
                 @endif
+            </div>
 
+            <div class="mt-4">
+                <h3>
+                    <strong>Deskripsi</strong>
+                </h3>
+                <span> {{ $content->description }} </span>
             </div>
         </div>
 

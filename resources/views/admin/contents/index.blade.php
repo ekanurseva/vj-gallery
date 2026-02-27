@@ -36,77 +36,168 @@
         </button>
         </div>
 
-         {{-- TAB KONTEN --}}
+        {{-- TAB KONTEN --}}
         <div id="tabKonten">
 
-            <table style="width:100%;color:white;border-collapse:collapse;">
-                <thead>
-                    <tr style="border-bottom:1px solid rgba(255,255,255,0.2);">
-                        <th style="padding:10px;text-align:left;">Judul</th>
-                        <th style="padding:10px;text-align:left;">User</th>
-                        <th style="padding:10px;text-align:left;">Kategori</th>
-                        <th style="padding:10px;text-align:left;">Tipe</th>
-                        <th style="padding:10px;text-align:left;">Status</th>
-                        <th style="padding:10px;text-align:center;">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse($contents as $content)
-                        <tr style="border-bottom:1px solid rgba(255,255,255,0.1);">
-                            <td style="padding:10px;">{{ $content->title }}</td>
-                            <td style="padding:10px;">{{ $content->user->name }}</td>
-                            <td style="padding:10px;">{{ $content->category->name }}</td>
-                            <td style="padding:10px;">{{ strtoupper($content->type) }}</td>
-                            <td style="padding:10px;">
-                                {{ strtoupper($content->status) }}
-                            </td>
-                            <td style="padding:10px;text-align:center;">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
-                                @if($content->status == 'pending')
-                                    <form action="{{ route('admin.contents.approve',$content->content_id) }}"
-                                          method="POST"
-                                          style="display:inline;">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button style="background:#16a34a;color:white;border:none;padding:5px 10px;border-radius:5px;">
-                                            Approve
-                                        </button>
-                                    </form>
+                @forelse($contents as $content)
 
-                                    <form action="{{ route('admin.contents.reject',$content->content_id) }}"
-                                          method="POST"
-                                          style="display:inline;">
-                                        @csrf
-                                        @method('PATCH')
-                                        <button style="background:#dc2626;color:white;border:none;padding:5px 10px;border-radius:5px;">
-                                            Reject
-                                        </button>
-                                    </form>
-                                @else
-                                    <form action="{{ route('admin.contents.destroy',$content->content_id) }}"
-                                          method="POST"
-                                          style="display:inline;" onsubmit="return confirm('Yakin ingin menghapus konten ini?')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button style="background:#ef4444;color:white;border:none;padding:5px 10px;border-radius:5px;">
-                                            Hapus
-                                        </button>
-                                    </form>
+                @php
+                    $extension = strtolower(pathinfo($content->file_path, PATHINFO_EXTENSION));
+                    $fileUrl = asset('storage/'.$content->file_path);
+                @endphp
+
+                <div class="bg-slate-800 rounded-xl shadow-lg overflow-hidden text-white">
+
+                    {{-- PREVIEW --}}
+                    <div class="h-56 bg-slate-700 cursor-pointer"
+                        onclick="openModal('{{ $fileUrl }}','{{ $extension }}')">
+
+                        {{-- IMAGE --}}
+                        @if(in_array($extension, ['jpg','jpeg','png','gif','webp']))
+                            <img src="{{ $fileUrl }}" 
+                                class="w-full h-full object-cover">
+
+                        {{-- VIDEO --}}
+                        @elseif(in_array($extension, ['mp4','mov','webm']))
+                            <video class="w-full h-full object-cover" muted>
+                                <source src="{{ $fileUrl }}">
+                            </video>
+
+                        {{-- AUDIO --}}
+                        @elseif(in_array($extension, ['mp3','wav','ogg']))
+                            <div class="flex items-center justify-center h-full bg-slate-600">
+                                <audio controls class="w-full px-4">
+                                    <source src="{{ $fileUrl }}">
+                                </audio>
+                            </div>
+                        @endif
+
+                    </div>
+
+                    {{-- INFO --}}
+                    <div class="p-4 space-y-2">
+
+                        <h2 class="font-semibold truncate">
+                            {{ $content->title }}
+                        </h2>
+
+                        <p class="text-sm text-gray-400">
+                            User: {{ $content->user->name }}
+                        </p>
+
+                        <p class="text-sm text-gray-400">
+                            Kategori: {{ $content->category->name ?? '-' }}
+                        </p>
+
+                        <p class="text-sm text-gray-400">
+                            Deskripsi: {{ $content->description ?? '-' }}
+                        </p>
+
+                        <div class="flex justify-between items-center text-sm">
+
+                            <span class="px-2 py-1 text-slate-300">
+                                {{ strtoupper($content->type) }}
+                            </span>
+
+                            <span class="
+                                px-2 py-1
+                                @if($content->status === 'approved') text-green-600
+                                @elseif($content->status === 'pending') text-yellow-500
+                                @else text-red-600
                                 @endif
+                            ">
+                                {{ strtoupper($content->status) }}
+                            </span>
 
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="6" style="padding:20px;text-align:center;">
-                                Belum ada konten
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        </div>
+
+                        {{-- ACTION --}}
+                        <div class="pt-3 border-t border-slate-700 flex gap-2 flex-wrap">
+
+                            @if($content->status == 'pending')
+
+                                <form action="{{ route('admin.contents.approve',$content->content_id) }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm">
+                                        Approve
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('admin.contents.reject',$content->content_id) }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('PATCH')
+                                    <button class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+                                        Reject
+                                    </button>
+                                </form>
+
+                            @else
+
+                                <form action="{{ route('admin.contents.destroy',$content->content_id) }}"
+                                    method="POST"
+                                    onsubmit="return confirm('Yakin ingin menghapus konten ini?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-sm">
+                                        Hapus
+                                    </button>
+                                </form>
+
+                            @endif
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+                @empty
+                    <div class="col-span-full text-center text-gray-400 py-10">
+                        Belum ada konten
+                    </div>
+                @endforelse
+
+            </div>
 
         </div>
+
+        <!-- MODAL -->
+        <div id="previewModal"
+            class="hidden fixed inset-0 bg-black/90 flex items-center justify-center z-50">
+
+            <div id="modalContent" class="max-w-[90%] max-h-[90%]"></div>
+
+        </div>
+
+        <script>
+        function openModal(url, ext) {
+
+            let modal = document.getElementById('previewModal');
+            let content = document.getElementById('modalContent');
+
+            if(['jpg','jpeg','png','gif','webp'].includes(ext)){
+                content.innerHTML = `<img src="${url}" style="max-width:100%; max-height:90vh;">`;
+            }
+
+            if(['mp4','mov','webm'].includes(ext)){
+                content.innerHTML = `
+                    <video controls autoplay style="max-width:100%; max-height:90vh;">
+                        <source src="${url}">
+                    </video>`;
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        document.getElementById('previewModal').onclick = function(){
+            this.classList.add('hidden');
+        }
+        </script>
         
         {{-- TAB KATEGORI --}}
         <div id="tabKategori" style="display:none;">
