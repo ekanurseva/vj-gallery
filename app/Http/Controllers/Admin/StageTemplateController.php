@@ -15,7 +15,11 @@ class StageTemplateController extends Controller
     public function index()
     {
         $templates = StageTemplate::latest()->get();
-        return view('admin.stage_templates.index', compact('templates'));
+
+        return view('admin.stage_templates.index', [
+            'templates' => $templates,
+            'isAdmin' => true
+        ]);
     }
 
     /**
@@ -181,6 +185,16 @@ class StageTemplateController extends Controller
 
         return response()->json([
             'status' => 'success'
+        ]);
+    }
+
+    public function publicIndex()
+    {
+        $templates = StageTemplate::latest()->get();
+
+        return view('admin.stage_templates.index', [
+            'templates' => $templates,
+            'isAdmin' => false
         ]);
     }
 }

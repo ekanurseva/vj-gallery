@@ -141,6 +141,10 @@ Route::prefix('admin')
         ->name('stage_templates.saveLayout');
 });
 
+Route::get('/stage-templates', 
+    [StageTemplateController::class, 'publicIndex']
+)->name('stage_templates.index');
+
 Route::get('/simulations/create/{template}', 
     [SimulationController::class,'create']
 )->name('simulations.create');

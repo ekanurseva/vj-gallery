@@ -99,14 +99,15 @@
             @if(auth()->user()->role === 'admin')
                 <a href="/admin/users" class="hover:text-cyan-400 transition">Pengguna</a>
                 <a href="/admin/contents" class="hover:text-cyan-400 transition">Konten</a>
-                <a href="/admin/stage_templates" class="hover:text-cyan-400 transition">Template</a>
                 <a href="/admin/karya" class="hover:text-cyan-400 transition">Karya</a>
+                <a href="/admin/stage_templates" class="hover:text-cyan-400 transition">Template</a>
                 <a href="/simulations" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
             @endif
 
             @if(auth()->user()->role === 'vj')
-                <a href="/vj/contents" class="hover:text-cyan-400 transition">Konten Karya</a>
-                <a href="/vj/simulation" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
+                <a href="/vj/contents" class="hover:text-cyan-400 transition">Konten Karya</a>                
+                <a href="/admin/stage_templates" class="hover:text-cyan-400 transition">Template</a>
+                <a href="/simulation" class="hover:text-cyan-400 transition">Simulasi Panggung</a>
                 <a href="/gallery" class="hover:text-cyan-400 transition">Gallery Karya</a>
             @endif
         @endauth

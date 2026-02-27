@@ -5,10 +5,13 @@
 
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold">Template Panggung</h1>
-        <a href="{{ route('admin.stage_templates.create') }}"
-           class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
-            + Tambah Template
-        </a>
+
+        @if(auth()->user()->role === 'admin')
+            <a href="{{ route('admin.stage_templates.create') }}"
+            class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg">
+                + Tambah Template
+            </a>
+        @endif
     </div>
 
     @if(session('success'))
@@ -41,30 +44,37 @@
                                 View
                             </a>
 
-                            <a href="{{ route('admin.stage_templates.edit',$template) }}"
-                            class="bg-yellow-500 px-3 py-1 rounded">
-                                Edit
-                            </a>
+                            {{-- Tombol khusus admin --}}
+                            @if(auth()->user()->role === 'admin')
 
-                            <a href="{{ route('admin.stage_templates.builder',$template) }}"
-                            class="bg-green-600 px-3 py-1 rounded">
-                                Builder
-                            </a>
+                                <a href="{{ route('admin.stage_templates.edit',$template) }}"
+                                class="bg-yellow-500 px-3 py-1 rounded">
+                                    Edit
+                                </a>
 
+                                <a href="{{ route('admin.stage_templates.builder',$template) }}"
+                                class="bg-green-600 px-3 py-1 rounded">
+                                    Builder
+                                </a>
+
+                                <form action="{{ route('admin.stage_templates.destroy',$template) }}"
+                                    method="POST">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="bg-red-600 px-3 py-1 rounded"
+                                            onclick="return confirm('Yakin hapus template?')">
+                                        Hapus
+                                    </button>
+                                </form>
+
+                            @endif
+
+                            {{-- Semua role bisa pakai template --}}
                             <a href="{{ route('simulations.create',$template) }}"
                             class="bg-blue-600 px-3 py-1 rounded">
                                 Gunakan Template
                             </a>
 
-                            <form action="{{ route('admin.stage_templates.destroy',$template) }}"
-                                method="POST">
-                                @csrf
-                                @method('DELETE')
-                                <button class="bg-red-600 px-3 py-1 rounded"
-                                        onclick="return confirm('Yakin hapus template?')">
-                                    Hapus
-                                </button>
-                            </form>
                         </td>
                     </tr>
                 @empty
