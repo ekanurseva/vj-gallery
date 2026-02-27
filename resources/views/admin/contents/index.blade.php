@@ -38,6 +38,22 @@
 
         {{-- TAB KONTEN --}}
         <div id="tabKonten">
+            <div class="flex justify-end mb-6">
+                <form method="GET" action="{{ route('admin.contents.index') }}" id="filterForm" class="flex flex-col sm:flex-row gap-3 items-end">
+
+                    {{-- SEARCH --}}
+                    <input type="text" name="search" value="{{ request('search') }}" id="searchInput" placeholder="Cari judul..." class="w-48 bg-[#0A192F] border border-white/20 rounded-lg px-3 py-2 text-sm text-white">
+
+                    {{-- FILTER STATUS --}}
+                    <select name="status" id="statusFilter" class="w-40 bg-[#0A192F] border border-white/20 rounded-lg px-3 py-2 text-sm text-white">
+                        <option value="">Semua Status</option>
+                        <option value="pending" {{ request('status')=='pending' ? 'selected':'' }}>Pending</option>
+                        <option value="approved" {{ request('status')=='approved' ? 'selected':'' }}>Approved</option>
+                        <option value="rejected" {{ request('status')=='rejected' ? 'selected':'' }}>Rejected</option>
+                    </select>
+
+                </form>
+            </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
 
@@ -309,32 +325,50 @@
 
 {{-- SCRIPT TAB --}}
 <script>
-function showTab(tab) {
-    const konten = document.getElementById('tabKonten');
-    const kategori = document.getElementById('tabKategori');
-    const btnKonten = document.getElementById('btnKonten');
-    const btnKategori = document.getElementById('btnKategori');
+    const statusFilter = document.getElementById('statusFilter');
+    const searchInput = document.getElementById('searchInput');
+    const form = document.getElementById('filterForm');
 
-    if(tab === 'konten') {
-        konten.style.display = 'block';
-        kategori.style.display = 'none';
+    // Auto submit saat status berubah
+    statusFilter.addEventListener('change', function() {
+        form.submit();
+    });
 
-        btnKonten.style.background = 'white';
-        btnKonten.style.color = '#0B1E3D';
+    // Auto submit saat mengetik (delay 500ms)
+    let typingTimer;
+    searchInput.addEventListener('keyup', function() {
+        clearTimeout(typingTimer);
+        typingTimer = setTimeout(() => {
+            form.submit();
+        }, 500);
+    });
 
-        btnKategori.style.background = 'transparent';
-        btnKategori.style.color = 'white';
-    } else {
-        konten.style.display = 'none';
-        kategori.style.display = 'block';
+    function showTab(tab) {
+        const konten = document.getElementById('tabKonten');
+        const kategori = document.getElementById('tabKategori');
+        const btnKonten = document.getElementById('btnKonten');
+        const btnKategori = document.getElementById('btnKategori');
 
-        btnKategori.style.background = 'white';
-        btnKategori.style.color = '#0B1E3D';
+        if(tab === 'konten') {
+            konten.style.display = 'block';
+            kategori.style.display = 'none';
 
-        btnKonten.style.background = 'transparent';
-        btnKonten.style.color = 'white';
+            btnKonten.style.background = 'white';
+            btnKonten.style.color = '#0B1E3D';
+
+            btnKategori.style.background = 'transparent';
+            btnKategori.style.color = 'white';
+        } else {
+            konten.style.display = 'none';
+            kategori.style.display = 'block';
+
+            btnKategori.style.background = 'white';
+            btnKategori.style.color = '#0B1E3D';
+
+            btnKonten.style.background = 'transparent';
+            btnKonten.style.color = 'white';
+        }
     }
-}
 </script>
 
 @endsection

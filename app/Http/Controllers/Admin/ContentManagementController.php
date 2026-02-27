@@ -9,10 +9,23 @@ use App\Models\Content;
 
 class ContentManagementController extends Controller
 {
-    public function index()
-    {
+    public function index(Request $request)
+    {   
         $categories = Category::all();
-        $contents = Content::with('user','category')->latest()->get();
+
+        $query = Content::with('user','category')->latest();
+
+        // Search Judul
+        if ($request->search) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Filter Status
+        if ($request->status) {
+            $query->where('status', $request->status);
+        }
+
+        $contents = $query->get();
 
         return view('admin.contents.index', compact('categories','contents'));
     }
