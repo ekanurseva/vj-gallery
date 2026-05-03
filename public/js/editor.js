@@ -154,8 +154,8 @@ document.addEventListener('DOMContentLoaded', function () {
             enableTimelineResize(bar, el);
         }
 
-        visuals.forEach((el,i)=> createBar(el,i,'bg-blue-500'));
-        audios.forEach((el,i)=> createBar(el,i+visuals.length,'bg-green-500'));
+        visuals.forEach((el,i)=> createBar(el,i,'bg-blue-600'));
+        audios.forEach((el,i)=> createBar(el,i+visuals.length,'bg-green-600'));
 
         maxTime += 2;
         container.style.width = (maxTime * pixelsPerSecond) + 'px';
@@ -745,6 +745,19 @@ document.addEventListener('DOMContentLoaded', function () {
         renderTimeline();
     }
     
+    document.getElementById('themeSelect').addEventListener('change', function(){
+        fetch(`/simulations/${SIM_ID}/set-theme`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.editorConfig.csrf
+            },
+            body: JSON.stringify({
+                theme_id: this.value
+            })
+        }).then(() => location.reload());
+    });
+
     /* INIT */
     refreshLayerPanel();
     autoReindexLayers();

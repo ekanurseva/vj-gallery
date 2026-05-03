@@ -56,6 +56,10 @@ Route::middleware('auth')->group(function () {
     Route::post('/simulations/{simulation}/save-contents',
         [App\Http\Controllers\SimulationController::class, 'saveContents']
     )->name('simulations.saveContents');
+    
+    Route::post('/simulations/{simulation}/set-theme',
+        [SimulationController::class,'setTheme']
+    )->name('simulations.setTheme');
 
     Route::post('/simulations/upload-content', 
         [SimulationController::class, 'uploadContent']

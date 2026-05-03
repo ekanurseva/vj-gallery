@@ -39,4 +39,13 @@ class Content extends Model
         return gmdate("H:i:s", $this->duration);
     }
 
+    public function themes()
+    {
+        return $this->belongsToMany(
+            Theme::class,
+            'content_theme',
+            'content_id',
+            'theme_id'
+        );
+    }
 }

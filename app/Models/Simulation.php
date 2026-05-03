@@ -45,4 +45,9 @@ class Simulation extends Model
     {
         return $this->hasMany(SimulationContent::class, 'simulation_id', 'simulation_id');
     }
+
+    public function theme()
+    {
+        return $this->belongsTo(Theme::class, 'theme_id');
+    }
 }
