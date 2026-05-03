@@ -7,6 +7,7 @@ use App\Models\StageTemplate;
 use App\Models\Simulation;
 use App\Models\SimulationContent;
 use App\Models\Content;
+use App\Models\Theme;
 use Illuminate\Support\Facades\Storage;
 
 class SimulationController extends Controller
@@ -79,15 +80,17 @@ class SimulationController extends Controller
                     $t->where('theme_id', $themeId);
                 });
             })
-            ->latest()
             ->get();
+
+        $themes = Theme::all();
 
         return view('simulations.builder', compact(
             'simulation',
             'availableContents',
             'layout',
             'visualContents',
-            'audioContents'
+            'audioContents',
+            'themes'
         ));
     }
 
