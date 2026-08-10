@@ -7,7 +7,6 @@ use App\Models\StageTemplate;
 use App\Models\Simulation;
 use App\Models\SimulationContent;
 use App\Models\Content;
-use App\Models\Theme;
 use Illuminate\Support\Facades\Storage;
 
 class SimulationController extends Controller
@@ -44,7 +43,7 @@ class SimulationController extends Controller
             'status'        => 'draft'
         ]);
 
-        return redirect()->route('simulations.builder',$simulation->simulation_id);
+        return redirect()->route('simulations.builder', $simulation->simulation_id);
     }
 
     public function builder($simulation_id)
@@ -68,29 +67,18 @@ class SimulationController extends Controller
             ->filter(fn($item) =>
                 ($item->content->type ?? null) === 'audio'
             );
-
-        $themeId = $simulation->theme_id;
-
+        
         $availableContents = Content::where(function($q){
-                $q->where('status','approved')
-                ->orWhere('user_id', auth()->id());
-            })
-            ->when($themeId, function($q) use ($themeId){
-                $q->whereHas('themes', function($t) use ($themeId){
-                    $t->where('theme_id', $themeId);
-                });
-            })
-            ->get();
-
-        $themes = Theme::all();
+            $q->where('status','approved')
+            ->orWhere('user_id', auth()->id());
+        })->get();
 
         return view('simulations.builder', compact(
             'simulation',
             'availableContents',
             'layout',
             'visualContents',
-            'audioContents',
-            'themes'
+            'audioContents'
         ));
     }
 
@@ -150,25 +138,6 @@ class SimulationController extends Controller
         }
 
         return response()->json(['status' => 'success']);
-    }
-
-    public function setTheme(Request $request, $id)
-    {
-        $request->validate([
-            'theme_id' => 'nullable|exists:themes,theme_id'
-        ]);
-
-        $simulation = Simulation::findOrFail($id);
-
-        if ($simulation->user_id !== auth()->id()) {
-            abort(403);
-        }
-
-        $simulation->update([
-            'theme_id' => $request->theme_id
-        ]);
-
-        return response()->json(['success'=>true]);
     }
 
     public function uploadContent(Request $request)

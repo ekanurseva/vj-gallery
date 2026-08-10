@@ -6,6 +6,16 @@
            class="w-full mt-1 p-2 rounded bg-slate-700 border border-slate-600">
 </div>
 
+<select name="theme_id" class="w-full p-2 rounded bg-slate-700">
+    <option value="">Pilih Tema</option>
+
+    @foreach($themes as $theme)
+        <option value="{{ $theme->theme_id }}">
+            {{ $theme->name }}
+        </option>
+    @endforeach
+</select>
+
 <div>
     <label>Deskripsi</label>
     <textarea name="description"

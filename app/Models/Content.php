@@ -45,6 +45,8 @@ class Content extends Model
             Theme::class,
             'content_theme',
             'content_id',
+            'theme_id',
+            'content_id',
             'theme_id'
         );
     }

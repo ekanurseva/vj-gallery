@@ -24,7 +24,7 @@ class Simulation extends Model
 
     public function template()
     {
-        return $this->belongsTo(StageTemplate::class,'template_id','template_id');
+        return $this->belongsTo(StageTemplate::class,'template_id');
     }
 
     public function user()
@@ -44,10 +44,5 @@ class Simulation extends Model
     public function simulationContents()
     {
         return $this->hasMany(SimulationContent::class, 'simulation_id', 'simulation_id');
-    }
-
-    public function theme()
-    {
-        return $this->belongsTo(Theme::class, 'theme_id');
     }
 }

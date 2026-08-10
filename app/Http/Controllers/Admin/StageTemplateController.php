@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\StageTemplate;
+use App\Models\Theme;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -67,6 +68,7 @@ class StageTemplateController extends Controller
             'background_path' => $backgroundPath,
             'audio_path' => $audioPath,
             'created_by' => auth()->user()->user_id,
+            'theme_id' => $request->theme_id
         ]);
 
         return redirect()
@@ -87,6 +89,7 @@ class StageTemplateController extends Controller
      */
     public function edit(StageTemplate $stage_template)
     {
+        $themes = Theme::all();
         return view('admin.stage_templates.edit', compact('stage_template'));
     }
 
@@ -141,6 +144,7 @@ class StageTemplateController extends Controller
             'canvas_width' => $request->canvas_width,
             'canvas_height' => $request->canvas_height,
             'background_type' => $request->background_type,
+            'theme_id' => $request->theme_id
         ]);
 
         return redirect()

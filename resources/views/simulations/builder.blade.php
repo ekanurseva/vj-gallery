@@ -106,16 +106,6 @@
             <div id="layerPanel" class="space-y-2">
                 {{-- Layer items akan di-generate via JS --}}
             </div>
-
-            <select id="themeSelect" class="bg-gray-700 p-2 rounded w-full mb-3">
-            <option value="">Semua Tema</option>
-            @foreach($themes as $theme)
-                <option value="{{ $theme->theme_id }}"
-                    {{ $simulation->theme_id == $theme->theme_id ? 'selected' : '' }}>
-                    {{ $theme->name }}
-                </option>
-            @endforeach
-        </select>
         </div>
     </div>
 

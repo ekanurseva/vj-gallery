@@ -30,4 +30,16 @@ class StageTemplate extends Model
         return $this->hasMany(Simulation::class,'template_id','template_id');
     }
 
+    public function themes()
+    {
+        return $this->belongsToMany(
+            Theme::class,
+            'template_theme',
+            'template_id',
+            'theme_id',
+            'template_id',
+            'theme_id'
+        );
+    }
+
 }
