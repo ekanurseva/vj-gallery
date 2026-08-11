@@ -29,10 +29,6 @@ Route::middleware('auth')->group(function () {
         [SimulationController::class,'create']
     )->name('simulations.create');
 
-    Route::get('/simulations/{simulation}/edit',
-        [SimulationController::class,'edit']
-    )->name('simulations.edit');
-
     Route::get('/simulations', 
         [SimulationController::class,'index']
     )->name('simulations.index');
@@ -56,22 +52,18 @@ Route::middleware('auth')->group(function () {
     Route::post('/simulations/{simulation}/save-contents',
         [App\Http\Controllers\SimulationController::class, 'saveContents']
     )->name('simulations.saveContents');
-    
-    Route::post('/simulations/{simulation}/set-theme',
-        [SimulationController::class,'setTheme']
-    )->name('simulations.setTheme');
 
     Route::post('/simulations/upload-content', 
         [SimulationController::class, 'uploadContent']
     )->name('simulations.uploadContent');
 
-});
+    });
 
 Route::middleware(['auth', 'role:vj'])->group(function () {
     Route::get('/vj/dashboard', function () {
         return view('vj.dashboard');
     });
-});
+    });
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -79,7 +71,7 @@ Route::middleware(['auth','role:admin'])
     ->group(function () {
 
     Route::resource('users', UserController::class);
-});
+    });
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -113,16 +105,33 @@ Route::middleware(['auth','role:admin'])
     Route::patch('categories/{category}',
         [CategoryController::class,'update'])
         ->name('categories.update');
-});
+    });
 
-Route::middleware(['auth','role:vj'])
+Route::middleware(['auth', 'role:vj'])
     ->prefix('vj')
     ->name('vj.')
-    ->group(function(){
+    ->group(function () {
 
-    Route::get('contents/create', [ContentController::class,'create'])->name('contents.create');
-    Route::post('contents', [ContentController::class,'store'])->name('contents.store');
-});
+        Route::get('/dashboard', function () {
+            return view('vj.dashboard');
+        })->name('dashboard');
+
+
+        Route::get('/templates',
+            [SimulationController::class, 'templates']
+        )->name('templates.index');
+
+
+        Route::get('/contents/create',
+            [VjContentController::class, 'create']
+        )->name('contents.create');
+
+
+        Route::post('/contents',
+            [VjContentController::class, 'store']
+        )->name('contents.store');
+
+    });
 
 Route::middleware(['auth','role:admin'])
     ->prefix('admin')
@@ -140,7 +149,7 @@ Route::middleware(['auth','role:admin'])
 
     Route::delete('karya/{content}', [AdminKaryaController::class,'destroy'])
         ->name('karya.destroy');
-});
+    });
 
 Route::middleware(['auth'])->prefix('vj')->group(function(){
 
@@ -156,7 +165,7 @@ Route::middleware(['auth'])->prefix('vj')->group(function(){
     Route::delete('/contents/{content}', [VjContentController::class,'destroy'])
         ->name('vj.contents.destroy');
 
-});
+    });
 
 Route::get('/gallery', [GalleryController::class,'index'])
     ->name('gallery.index');
@@ -178,10 +187,6 @@ Route::prefix('admin')
     Route::post('stage_templates/{stage_template}/save-layout',
         [StageTemplateController::class, 'saveLayout'])
         ->name('stage_templates.saveLayout');
-});
-
-Route::get('/stage-templates', 
-    [StageTemplateController::class, 'publicIndex']
-)->name('stage_templates.index');
+    });
 
 require __DIR__.'/auth.php';

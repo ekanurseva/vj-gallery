@@ -2,54 +2,222 @@
 
 @section('content')
 
-<div class="min-h-screen bg-gray-900 text-white flex justify-center items-center">
+<div class="min-h-screen p-8">
 
-    <div class="bg-gray-800 p-8 rounded shadow-lg w-full max-w-xl">
+    <div class="max-w-3xl mx-auto">
 
-        <h1 class="text-2xl font-semibold mb-2">
-            Gunakan Template
-        </h1>
+        {{-- HEADER --}}
+        <div class="mb-8">
 
-        <p class="text-gray-400 mb-6">
-            Template: <span class="font-semibold text-white">
+            <h1 class="text-3xl font-bold">
+                Gunakan Template
+            </h1>
+
+            <p class="text-gray-400 mt-2">
+                Buat simulasi baru berdasarkan template panggung yang dipilih.
+            </p>
+
+        </div>
+
+
+        {{-- TEMPLATE INFO --}}
+        <div class="bg-slate-800 border border-white/10 rounded-xl p-6 mb-6">
+
+            <h2 class="text-xl font-semibold">
                 {{ $template->name }}
-            </span>
-        </p>
+            </h2>
 
-        <form method="POST" action="{{ route('simulations.store',$template->template_id) }}">
-            @csrf
+            <p class="text-gray-400 mt-2">
+                {{ $template->description ?? 'Tidak ada deskripsi template.' }}
+            </p>
 
-            <div class="mb-4">
-                <label class="block mb-1 text-sm text-gray-300">
-                    Judul Simulation
-                </label>
-                <input type="text" name="title" required
-                    class="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 text-white">
-            </div>
 
-            <div class="mb-6">
-                <label class="block mb-1 text-sm text-gray-300">
-                    Deskripsi (Opsional)
-                </label>
-                <textarea name="description"
-                    class="w-full px-3 py-2 rounded bg-gray-700 border border-gray-600 text-white"></textarea>
-            </div>
+            {{-- CANVAS --}}
+            <div class="mt-5 text-sm text-gray-400">
 
-            <div class="flex justify-between">
+                Canvas:
 
-                <a href="{{ route('admin.stage_templates.index') }}"
-                   class="bg-gray-600 px-4 py-2 rounded">
-                    Batal
-                </a>
-
-                <button type="submit"
-                    class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
-                    Buat Simulation
-                </button>
+                <span class="text-white font-medium">
+                    {{ $template->canvas_width }}
+                    ×
+                    {{ $template->canvas_height }}
+                </span>
 
             </div>
 
-        </form>
+
+            {{-- TEMA --}}
+            <div class="mt-5">
+
+                <p class="text-sm text-gray-400 mb-2">
+                    Tema Template
+                </p>
+
+                <div class="flex flex-wrap gap-2">
+
+                    @forelse($template->themes as $theme)
+
+                        <span
+                            class="
+                                px-3 py-1
+                                rounded-full
+                                text-sm
+                                bg-cyan-400/10
+                                text-cyan-300
+                                border border-cyan-400/20
+                            "
+                        >
+                            {{ $theme->name }}
+                        </span>
+
+                    @empty
+
+                        <span class="text-sm text-gray-500">
+                            Template belum memiliki tema.
+                        </span>
+
+                    @endforelse
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        {{-- FORM SIMULATION --}}
+        <div class="bg-slate-800 border border-white/10 rounded-xl p-6">
+
+            <form
+                method="POST"
+                action="{{ route('simulations.store', $template->template_id) }}"
+            >
+
+                @csrf
+
+
+                {{-- TITLE --}}
+                <div class="mb-5">
+
+                    <label
+                        for="title"
+                        class="block mb-2 text-sm text-gray-300"
+                    >
+                        Judul Simulation
+                    </label>
+
+                    <input
+                        type="text"
+                        id="title"
+                        name="title"
+                        value="{{ old('title') }}"
+                        placeholder="Contoh: Konser Malam Minggu"
+                        required
+                        class="
+                            w-full
+                            px-4 py-2.5
+                            rounded-lg
+                            bg-[#0A192F]
+                            border border-white/10
+                            text-white
+                            placeholder-gray-500
+                            focus:outline-none
+                            focus:border-cyan-400
+                        "
+                    >
+
+                    @error('title')
+
+                        <p class="text-red-400 text-sm mt-2">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+
+                {{-- DESCRIPTION --}}
+                <div class="mb-6">
+
+                    <label
+                        for="description"
+                        class="block mb-2 text-sm text-gray-300"
+                    >
+                        Deskripsi
+                        <span class="text-gray-500">
+                            (Opsional)
+                        </span>
+                    </label>
+
+                    <textarea
+                        id="description"
+                        name="description"
+                        rows="4"
+                        placeholder="Tambahkan deskripsi simulation..."
+                        class="
+                            w-full
+                            px-4 py-2.5
+                            rounded-lg
+                            bg-[#0A192F]
+                            border border-white/10
+                            text-white
+                            placeholder-gray-500
+                            focus:outline-none
+                            focus:border-cyan-400
+                        "
+                    >{{ old('description') }}</textarea>
+
+                    @error('description')
+
+                        <p class="text-red-400 text-sm mt-2">
+                            {{ $message }}
+                        </p>
+
+                    @enderror
+
+                </div>
+
+
+                {{-- ACTION --}}
+                <div class="flex justify-between items-center">
+
+                    <a
+                        href="{{ auth()->user()->role === 'admin'
+                            ? route('admin.stage_templates.index')
+                            : route('vj.templates.index') }}"
+                        class="
+                            bg-slate-700
+                            hover:bg-slate-600
+                            px-5 py-2.5
+                            rounded-lg
+                            transition
+                        "
+                    >
+                        Batal
+                    </a>
+
+
+                    <button
+                        type="submit"
+                        class="
+                            bg-cyan-400
+                            hover:bg-cyan-300
+                            text-[#0A192F]
+                            font-semibold
+                            px-5 py-2.5
+                            rounded-lg
+                            transition
+                        "
+                    >
+                        Gunakan Template
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
 
     </div>
 

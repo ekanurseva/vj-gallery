@@ -10,7 +10,7 @@ class Theme extends Model
 
     protected $fillable = [
         'name',
-        'color'
+        'description',
     ];
 
     public function templates()

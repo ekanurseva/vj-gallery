@@ -745,19 +745,6 @@ document.addEventListener('DOMContentLoaded', function () {
         renderTimeline();
     }
     
-    document.getElementById('themeSelect').addEventListener('change', function(){
-        fetch(`/simulations/${SIM_ID}/set-theme`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': window.editorConfig.csrf
-            },
-            body: JSON.stringify({
-                theme_id: this.value
-            })
-        }).then(() => location.reload());
-    });
-
     /* INIT */
     refreshLayerPanel();
     autoReindexLayers();

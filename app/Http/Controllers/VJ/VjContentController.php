@@ -61,14 +61,12 @@ class VjContentController extends Controller
     public function create()
     {
         $categories = Category::all();
-        $themes = Theme::all();
+
+        $themes = Theme::orderBy('name')->get();
 
         return view(
             'vj.contents.create',
-            compact(
-                'categories',
-                'themes'
-            )
+            compact('categories', 'themes')
         );
     }
 
@@ -231,47 +229,20 @@ class VjContentController extends Controller
         */
 
         $content = Content::create([
-
-            'title' =>
-                $request->title,
-
-            'category_id' =>
-                $request->category_id,
-
-            'user_id' =>
-                Auth::id(),
-
-            'file_path' =>
-                $path,
-
-            'width' =>
-                $width,
-
-            'height' =>
-                $height,
-
-            'duration' =>
-                $duration
-                    ? round($duration)
-                    : null,
-
-            'description' =>
-                $request->description,
-
-            'type' =>
-                $type,
-
-            'file_size' =>
-                $file->getSize(),
-
-            /*
-             * Konten VJ harus menunggu
-             * persetujuan Admin.
-             */
-            'status' =>
-                'pending',
+            'title' => $request->title,
+            'category_id' => $request->category_id,
+            'user_id' => Auth::id(),
+            'file_path' => $path,
+            'width' => $width,
+            'height' => $height,
+            'duration' => $duration ? round($duration) : null,
+            'description' => $request->description,
+            'type' => $type,
+            'file_size' => $file->getSize(),
+            'status' => 'pending'
         ]);
 
+        $content->themes()->sync($request->theme_ids ?? []);
 
         /*
         |--------------------------------------------------------------------------

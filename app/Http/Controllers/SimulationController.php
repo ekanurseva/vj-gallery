@@ -8,12 +8,13 @@ use App\Models\Simulation;
 use App\Models\SimulationContent;
 use App\Models\Content;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class SimulationController extends Controller
 {
     public function index()
     {
-        $simulations = Simulation::where('user_id', auth()->id())
+        $simulations = Simulation::where('user_id',  Auth::id())
             ->with(['simulationContents.content'])
             ->latest()
             ->get();
@@ -21,64 +22,213 @@ class SimulationController extends Controller
         return view('simulations.index', compact('simulations'));
     }
     
+    public function templates(Request $request)
+    {
+        $query = StageTemplate::with('themes')
+            ->latest();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search Template
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('search')) {
+
+            $query->where(
+                'name',
+                'like',
+                '%' . $request->search . '%'
+            );
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Filter Tema
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->filled('theme_id')) {
+
+            $query->whereHas('themes', function ($q) use ($request) {
+
+                $q->where(
+                    'themes.theme_id',
+                    $request->theme_id
+                );
+
+            });
+        }
+
+
+        $templates = $query->get();
+
+        $themes = \App\Models\Theme::orderBy('name')
+            ->get();
+
+
+        return view(
+            'vj.templates.index',
+            compact(
+                'templates',
+                'themes'
+            )
+        );
+    }
+
     public function create($template_id)
     {
-        $template = StageTemplate::findOrFail($template_id);
+        $template = StageTemplate::with('themes')
+            ->findOrFail($template_id);
 
-        return view('simulations.create', compact('template'));
+        return view(
+            'simulations.create',
+            compact('template')
+        );
     }
 
     public function store(Request $request, $template_id)
     {
-        $template = StageTemplate::findOrFail($template_id);
+        $template = StageTemplate::with('themes')
+            ->findOrFail($template_id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+        ]);
 
         $simulation = Simulation::create([
-            'template_id'   => $template_id,
-            'user_id'       => auth()->id(),
+            'template_id'   => $template->template_id,
+            'user_id'       => Auth::id(),
             'title'         => $request->title,
             'description'   => $request->description,
             'layout_json'   => $template->layout_json,
             'canvas_width'  => $template->canvas_width,
             'canvas_height' => $template->canvas_height,
-            'status'        => 'draft'
+            'status'        => 'draft',
         ]);
 
-        return redirect()->route('simulations.builder', $simulation->simulation_id);
+        return redirect()
+            ->route(
+                'simulations.builder',
+                $simulation->simulation_id
+            )
+            ->with(
+                'success',
+                'Template berhasil digunakan sebagai draft simulasi.'
+            );
     }
 
     public function builder($simulation_id)
     {
-        $simulation = Simulation::with('contents.content')
-            ->findOrFail($simulation_id);
+        $simulation = Simulation::with([
+            'contents.content',
+            'template.themes'
+        ])->findOrFail($simulation_id);
 
-        if ($simulation->user_id !== auth()->id()) {
+        if ($simulation->user_id !== Auth::id()) {
             abort(403);
         }
 
+        /*
+        |--------------------------------------------------------------------------
+        | Layout Template
+        |--------------------------------------------------------------------------
+        */
+
         $layout = json_decode($simulation->layout_json, true) ?? [];
 
+        /*
+        |--------------------------------------------------------------------------
+        | Tema Template
+        |--------------------------------------------------------------------------
+        */
+
+        $themeIds = $simulation->template
+            ? $simulation->template->themes->pluck('theme_id')
+            : collect();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Konten yang sudah digunakan dalam Simulation
+        |--------------------------------------------------------------------------
+        */
+
         $visualContents = $simulation->contents
-            ->filter(fn($item) =>
-                in_array($item->content->type ?? null, ['image','video'])
+            ->filter(fn ($item) =>
+                in_array(
+                    $item->content->type ?? null,
+                    ['image', 'video']
+                )
             )
             ->sortByDesc('layer_order');
 
         $audioContents = $simulation->contents
-            ->filter(fn($item) =>
+            ->filter(fn ($item) =>
                 ($item->content->type ?? null) === 'audio'
             );
-        
-        $availableContents = Content::where(function($q){
-            $q->where('status','approved')
-            ->orWhere('user_id', auth()->id());
+
+        /*
+        |--------------------------------------------------------------------------
+        | Semua Konten yang dapat digunakan
+        |--------------------------------------------------------------------------
+        */
+
+        $availableContents = Content::where(function ($q) {
+            $q->where('status', 'approved')
+            ->orWhere('user_id', Auth::id());
         })->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Konten Rekomendasi Berdasarkan Tema Template
+        |--------------------------------------------------------------------------
+        */
+
+        $recommendedContents = collect();
+
+        if ($themeIds->isNotEmpty()) {
+
+            $recommendedContents = Content::with([
+                    'themes',
+                    'category'
+                ])
+                ->where(function ($q) {
+                    $q->where('status', 'approved')
+                    ->orWhere('user_id', Auth::id());
+                })
+                ->whereHas('themes', function ($q) use ($themeIds) {
+                    $q->whereIn('themes.theme_id', $themeIds);
+                })
+                ->latest()
+                ->get();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Pisahkan Visual dan Audio
+        |--------------------------------------------------------------------------
+        */
+
+        $recommendedVisuals = $recommendedContents
+            ->filter(fn ($content) =>
+                in_array($content->type, ['image', 'video'])
+            );
+
+        $recommendedAudios = $recommendedContents
+            ->filter(fn ($content) =>
+                $content->type === 'audio'
+            );
 
         return view('simulations.builder', compact(
             'simulation',
             'availableContents',
             'layout',
             'visualContents',
-            'audioContents'
+            'audioContents',
+            'recommendedVisuals',
+            'recommendedAudios'
         ));
     }
 
@@ -97,14 +247,20 @@ class SimulationController extends Controller
     {
         $simulation = Simulation::findOrFail($simulation_id);
 
+        if ($simulation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
         $visuals = $request->visuals ?? [];
         $audios = $request->audios ?? [];
 
-        // Hapus Konten Lama
-        SimulationContent::where('simulation_id', $simulation_id)->delete();
+        SimulationContent::where(
+            'simulation_id',
+            $simulation_id
+        )->delete();
 
         // SAVE VISUAL
-        foreach($visuals as $v){
+        foreach ($visuals as $v) {
 
             SimulationContent::create([
                 'simulation_id' => $simulation_id,
@@ -116,12 +272,12 @@ class SimulationController extends Controller
                 'height'        => $v['height'],
                 'layer_order'   => $v['layer_order'],
                 'start_time'    => $v['start_time'],
-                'duration'      => $v['duration'],
+                'duration'     => $v['duration'],
             ]);
         }
 
         // SAVE AUDIO
-        foreach($audios as $a){
+        foreach ($audios as $a) {
 
             SimulationContent::create([
                 'simulation_id' => $simulation_id,
@@ -132,12 +288,14 @@ class SimulationController extends Controller
                 'width'         => 0,
                 'height'        => 0,
                 'layer_order'   => 0,
-                'start_time' => $a['start_time'],
-                'duration'   => $a['duration'],
+                'start_time'    => $a['start_time'],
+                'duration'      => $a['duration'],
             ]);
         }
 
-        return response()->json(['status' => 'success']);
+        return response()->json([
+            'status' => 'success'
+        ]);
     }
 
     public function uploadContent(Request $request)
@@ -160,7 +318,7 @@ class SimulationController extends Controller
         }
 
         $content = Content::create([
-            'user_id' => auth()->id(), 
+            'user_id' => Auth::id(), 
             'category_id' => 1,      
             'title' => $file->getClientOriginalName(),
             'file_path' => $path,
@@ -179,7 +337,7 @@ class SimulationController extends Controller
 
     public function destroy(Simulation $simulation)
     {
-        if ($simulation->user_id !== auth()->id()) {
+        if ($simulation->user_id !== Auth::id()) {
             abort(403);
         }
 

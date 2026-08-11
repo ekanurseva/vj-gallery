@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('themes', function (Blueprint $table) {
             $table->id('theme_id');
             $table->string('name'); // EDM, Chill, Dark, Cyberpunk
-            $table->string('color')->nullable(); // opsional UI
+            $table->string('description')->nullable(); // opsional UI
             $table->timestamps();
         });
     }
