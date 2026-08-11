@@ -41,9 +41,19 @@ Route::middleware('auth')->group(function () {
         [SimulationController::class,'store']
     )->name('simulations.store');
 
+    Route::post(
+    '/simulations/template/{simulation}/use',
+        [SimulationController::class, 'useSimulationTemplate']
+    )->name('simulations.useTemplate');
+
     Route::get('/simulations/{simulation}/builder',
         [SimulationController::class,'builder']
     )->name('simulations.builder');
+
+    Route::get(
+        '/simulations/{simulation}/reference',
+        [SimulationController::class, 'reference']
+    )->name('simulations.reference');
 
     Route::post('/simulations/{simulation}/save-layout',
         [SimulationController::class,'saveLayout']
@@ -71,6 +81,10 @@ Route::middleware(['auth','role:admin'])
     ->group(function () {
 
     Route::resource('users', UserController::class);
+    Route::patch(
+        'simulations/{simulation}/make-template',
+        [SimulationController::class, 'makeTemplate']
+    )->name('simulations.makeTemplate');
     });
 
 Route::middleware(['auth','role:admin'])

@@ -19,12 +19,37 @@ class Simulation extends Model
         'canvas_width',
         'canvas_height',
         'is_public',
-        'status'
+        'status',
+        'is_template',
+        'source_simulation_id'
+    ];
+
+    protected $casts = [
+        'is_public' => 'boolean',
+        'is_template' => 'boolean',
     ];
 
     public function template()
     {
         return $this->belongsTo(StageTemplate::class,'template_id');
+    }
+
+    public function sourceSimulation()
+    {
+        return $this->belongsTo(
+            Simulation::class,
+            'source_simulation_id',
+            'simulation_id'
+        );
+    }
+
+    public function clonedSimulations()
+    {
+        return $this->hasMany(
+            Simulation::class,
+            'source_simulation_id',
+            'simulation_id'
+        );
     }
 
     public function user()

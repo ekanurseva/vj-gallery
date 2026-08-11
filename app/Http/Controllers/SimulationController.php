@@ -24,14 +24,12 @@ class SimulationController extends Controller
     
     public function templates(Request $request)
     {
+        /* Template Panggung */
+
         $query = StageTemplate::with('themes')
             ->latest();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Search Template
-        |--------------------------------------------------------------------------
-        */
+        /* Search Template Panggung */
 
         if ($request->filled('search')) {
 
@@ -42,12 +40,7 @@ class SimulationController extends Controller
             );
         }
 
-
-        /*
-        |--------------------------------------------------------------------------
-        | Filter Tema
-        |--------------------------------------------------------------------------
-        */
+        /* Filter Tema Template Panggung */
 
         if ($request->filled('theme_id')) {
 
@@ -61,8 +54,50 @@ class SimulationController extends Controller
             });
         }
 
-
         $templates = $query->get();
+
+        /* Template Simulation */
+
+        $simulationQuery = Simulation::with([
+            'template',
+            'template.themes',
+            'simulationContents.content'
+        ])
+            ->where('is_template', true)
+            ->where('status', 'published')
+            ->latest();
+
+        /* Search Template Simulation */
+
+        if ($request->filled('search')) {
+
+            $simulationQuery->where(
+                'title',
+                'like',
+                '%' . $request->search . '%'
+            );
+        }
+
+        /* Filter Tema Template Simulation */
+
+        if ($request->filled('theme_id')) {
+
+            $simulationQuery->whereHas(
+                'template.themes',
+                function ($q) use ($request) {
+
+                    $q->where(
+                        'themes.theme_id',
+                        $request->theme_id
+                    );
+
+                }
+            );
+        }
+
+        $simulationTemplates = $simulationQuery->get();
+
+        /* Daftar Tema */
 
         $themes = \App\Models\Theme::orderBy('name')
             ->get();
@@ -72,7 +107,142 @@ class SimulationController extends Controller
             'vj.templates.index',
             compact(
                 'templates',
+                'simulationTemplates',
                 'themes'
+            )
+        );
+    }
+
+    public function useSimulationTemplate($simulation_id)
+    {
+        $sourceSimulation = Simulation::with([
+            'simulationContents'
+        ])->findOrFail($simulation_id);
+
+        // Hanya Simulation yang sudah dijadikan template
+        // yang boleh digunakan
+        if (!$sourceSimulation->is_template) {
+            abort(404);
+        }
+
+        // Template Simulation harus sudah dipublikasikan
+        if ($sourceSimulation->status !== 'published') {
+            abort(404);
+        }
+
+        // Buat Simulation baru milik user yang sedang login
+        $newSimulation = Simulation::create([
+            'template_id' => $sourceSimulation->template_id,
+            'user_id' => Auth::id(),
+            'title' => $sourceSimulation->title . ' - Copy',
+            'description' => $sourceSimulation->description,
+
+            'layout_json' => $sourceSimulation->layout_json,
+
+            'canvas_width' => $sourceSimulation->canvas_width,
+            'canvas_height' => $sourceSimulation->canvas_height,
+
+            'is_public' => false,
+            'status' => 'draft',
+
+            'is_template' => false,
+            'source_simulation_id' => $sourceSimulation->simulation_id,
+        ]);
+
+        /* Clone Simulation Contents */
+
+        foreach ($sourceSimulation->simulationContents as $sourceContent) {
+
+            $newSimulation->simulationContents()->create([
+                'content_id' => $sourceContent->content_id,
+
+                'layer_order' => $sourceContent->layer_order,
+                'start_time' => $sourceContent->start_time,
+                'duration' => $sourceContent->duration,
+
+                'pos_x' => $sourceContent->pos_x,
+                'pos_y' => $sourceContent->pos_y,
+
+                'width' => $sourceContent->width,
+                'height' => $sourceContent->height,
+
+                'opacity' => $sourceContent->opacity,
+                'rotation' => $sourceContent->rotation,
+                'scale' => $sourceContent->scale,
+
+                'slot_id' => $sourceContent->slot_id,
+            ]);
+        }
+
+        return redirect()
+            ->route(
+                'simulations.builder',
+                $newSimulation->simulation_id
+            )
+            ->with(
+                'success',
+                'Template Simulation berhasil digunakan. Silakan sesuaikan simulasi Anda.'
+            );
+    }
+
+    public function reference($simulation_id)
+    {
+        $simulation = Simulation::with([
+            'template.themes',
+            'simulationContents.content'
+        ])->findOrFail($simulation_id);
+
+        /* Pastikan Simulation merupakan Template */
+
+        if (!$simulation->is_template) {
+            abort(404);
+        }
+
+        /* Pastikan Template sudah dipublikasikan */
+
+        if ($simulation->status !== 'published') {
+            abort(404);
+        }
+
+        /* Layout */
+
+        $layout = json_decode(
+            $simulation->layout_json,
+            true
+        ) ?? [];
+
+
+        /* Visual Contents */
+
+        $visualContents = $simulation->simulationContents
+            ->filter(function ($item) {
+
+                return in_array(
+                    $item->content->type ?? null,
+                    ['image', 'video']
+                );
+
+            })
+            ->sortByDesc('layer_order');
+
+
+        /* Audio Contents */
+
+        $audioContents = $simulation->simulationContents
+            ->filter(function ($item) {
+
+                return ($item->content->type ?? null) === 'audio';
+
+            });
+
+
+        return view(
+            'simulations.reference',
+            compact(
+                'simulation',
+                'layout',
+                'visualContents',
+                'audioContents'
             )
         );
     }
@@ -131,29 +301,17 @@ class SimulationController extends Controller
             abort(403);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Layout Template
-        |--------------------------------------------------------------------------
-        */
+        /* Layout Template */
 
         $layout = json_decode($simulation->layout_json, true) ?? [];
 
-        /*
-        |--------------------------------------------------------------------------
-        | Tema Template
-        |--------------------------------------------------------------------------
-        */
+        /* Tema Template */
 
         $themeIds = $simulation->template
             ? $simulation->template->themes->pluck('theme_id')
             : collect();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Konten yang sudah digunakan dalam Simulation
-        |--------------------------------------------------------------------------
-        */
+        /* Konten yang sudah digunakan dalam Simulation */
 
         $visualContents = $simulation->contents
             ->filter(fn ($item) =>
@@ -169,22 +327,14 @@ class SimulationController extends Controller
                 ($item->content->type ?? null) === 'audio'
             );
 
-        /*
-        |--------------------------------------------------------------------------
-        | Semua Konten yang dapat digunakan
-        |--------------------------------------------------------------------------
-        */
+        /* Semua Konten yang dapat digunakan */
 
         $availableContents = Content::where(function ($q) {
             $q->where('status', 'approved')
             ->orWhere('user_id', Auth::id());
         })->get();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Konten Rekomendasi Berdasarkan Tema Template
-        |--------------------------------------------------------------------------
-        */
+        /* Konten Rekomendasi Berdasarkan Tema Template */
 
         $recommendedContents = collect();
 
@@ -205,11 +355,7 @@ class SimulationController extends Controller
                 ->get();
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Pisahkan Visual dan Audio
-        |--------------------------------------------------------------------------
-        */
+        /* Pisahkan Visual dan Audio */
 
         $recommendedVisuals = $recommendedContents
             ->filter(fn ($content) =>
@@ -333,6 +479,32 @@ class SimulationController extends Controller
             'path' => $content->file_path,
             'type' => $content->type
         ]);
+    }
+
+    public function makeTemplate($simulation_id)
+    {
+        $simulation = Simulation::findOrFail($simulation_id);
+
+        // Hanya pemilik simulation yang boleh menjadikannya template
+        if ($simulation->user_id !== Auth::id()) {
+            abort(403);
+        }
+
+        // Hanya admin yang boleh membuat Simulation Template
+        if (Auth::user()->role !== 'admin') {
+            abort(403);
+        }
+
+        $simulation->update([
+            'is_template' => true,
+            'is_public' => true,
+            'status' => 'published',
+        ]);
+
+        return back()->with(
+            'success',
+            'Simulation berhasil dijadikan Template Simulation.'
+        );
     }
 
     public function destroy(Simulation $simulation)

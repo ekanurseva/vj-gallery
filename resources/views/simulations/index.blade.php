@@ -79,6 +79,40 @@
                     </div>
                 </a>
 
+                @if(
+                    auth()->user()->role === 'admin' &&
+                    $simulation->user_id === auth()->id()
+                )
+
+                    @if(!$simulation->is_template)
+
+                        <form
+                            action="{{ route('admin.simulations.makeTemplate', $simulation->simulation_id) }}"
+                            method="POST"
+                            class="inline"
+                        >
+                            @csrf
+                            @method('PATCH')
+
+                            <button
+                                type="submit"
+                                class="bg-purple-600 hover:bg-purple-700 mx-4 my-4 px-3 py-1 rounded"
+                                onclick="return confirm('Jadikan Simulation ini sebagai Template Simulation?')"
+                            >
+                                Jadikan Template
+                            </button>
+                        </form>
+
+                    @else
+
+                        <span class="bg-green-600 mx-4 my-4 px-3 py-1 rounded text-sm">
+                            Template Simulation
+                        </span>
+
+                    @endif
+
+                @endif
+
             </div>
         @endforeach
     </div>
