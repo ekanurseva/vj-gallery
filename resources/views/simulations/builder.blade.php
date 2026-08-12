@@ -4,10 +4,7 @@
 
 <div class="h-screen bg-gray-900 text-white flex flex-col overflow-hidden">
 
-    {{-- ========================================================= --}}
     {{-- TOP BAR --}}
-    {{-- ========================================================= --}}
-
     <div class="flex-shrink-0 flex justify-between items-center px-6 py-4 bg-gray-800 shadow">
 
         <div>
@@ -32,60 +29,15 @@
     </div>
 
 
-    {{-- ========================================================= --}}
     {{-- MAIN WORKSPACE --}}
-    {{-- ========================================================= --}}
-
     <div class="flex flex-1 min-h-0 overflow-hidden">
 
-
-        {{-- ===================================================== --}}
-        {{-- SIDEBAR KIRI --}}
-        {{-- ===================================================== --}}
-
+        {{-- SIDEBAR KIRI --}}  
         <aside
             class="w-64 flex-shrink-0 bg-gray-800 border-r border-gray-700 overflow-y-auto"
         >
 
             <div class="p-4">
-
-                {{-- AVAILABLE CONTENTS --}}
-                <section>
-
-                    <h2 class="text-lg font-semibold mb-4">
-                        Available Contents
-                    </h2>
-
-
-                    @forelse($availableContents as $content)
-
-                        <div
-                            class="bg-gray-700 hover:bg-gray-600 p-2 mb-3 rounded cursor-pointer content-item transition"
-                            data-id="{{ $content->content_id }}"
-                            data-type="{{ $content->type }}"
-                            data-path="{{ $content->file_path }}"
-                        >
-
-                            <div class="text-sm truncate">
-                                {{ $content->title }}
-                            </div>
-
-                        </div>
-
-                    @empty
-
-                        <p class="text-sm text-gray-500">
-                            Belum ada konten.
-                        </p>
-
-                    @endforelse
-
-                </section>
-
-
-                {{-- DIVIDER --}}
-                <div class="border-t border-gray-700 my-5"></div>
-
 
                 {{-- REKOMENDASI --}}
                 <section>
@@ -223,16 +175,48 @@
 
                 </section>
 
+                {{-- AVAILABLE CONTENTS --}}
+                <section>
+
+                    <h2 class="text-lg font-semibold mt-4">
+                        Available Contents
+                    </h2>
+
+
+                    @forelse($availableContents as $content)
+
+                        <div
+                            class="bg-gray-700 hover:bg-gray-600 p-2 mb-3 rounded cursor-pointer content-item transition"
+                            data-id="{{ $content->content_id }}"
+                            data-type="{{ $content->type }}"
+                            data-path="{{ $content->file_path }}"
+                        >
+
+                            <div class="text-sm truncate">
+                                {{ $content->title }}
+                            </div>
+
+                        </div>
+
+                    @empty
+
+                        <p class="text-sm text-gray-500">
+                            Belum ada konten.
+                        </p>
+
+                    @endforelse
+
+                </section>
+
+
+                {{-- DIVIDER --}}
+                <div class="border-t border-gray-700 my-5"></div>
+
             </div>
 
         </aside>
-
-
-
-        {{-- ===================================================== --}}
-        {{-- STAGE AREA --}}
-        {{-- ===================================================== --}}
-
+        
+        {{-- STAGE AREA --}}     
         <main
             class="flex-1 min-w-0 min-h-0 overflow-auto flex justify-center items-center p-6"
         >
@@ -244,10 +228,7 @@
                 data-height="{{ $simulation->canvas_height }}"
             >
 
-                {{-- ============================================= --}}
                 {{-- RENDER SLOTS --}}
-                {{-- ============================================= --}}
-
                 @if(!empty($layout))
 
                     @foreach($layout as $slot)
@@ -270,10 +251,7 @@
                 @endif
 
 
-                {{-- ============================================= --}}
                 {{-- RENDER SAVED CONTENTS --}}
-                {{-- ============================================= --}}
-
                 @foreach($visualContents as $item)
 
                     @if($item->content)
@@ -321,13 +299,8 @@
             </div>
 
         </main>
-
-
-
-        {{-- ===================================================== --}}
+        
         {{-- SIDEBAR KANAN - LAYERS --}}
-        {{-- ===================================================== --}}
-
         <aside
             class="w-64 flex-shrink-0 bg-gray-800 border-l border-gray-700 overflow-y-auto"
         >
@@ -353,21 +326,12 @@
 
     </div>
 
-
-
-    {{-- ========================================================= --}}
     {{-- AUDIO + TIMELINE --}}
-    {{-- ========================================================= --}}
-
     <div
         class="flex-shrink-0 h-56 flex border-t border-gray-700 bg-gray-800"
     >
-
-
-        {{-- ===================================================== --}}
+        
         {{-- AUDIO TRACKS --}}
-        {{-- ===================================================== --}}
-
         <aside
             class="w-64 flex-shrink-0 bg-gray-900 p-4 border-r border-gray-700"
         >
@@ -445,11 +409,7 @@
         </aside>
 
 
-
-        {{-- ===================================================== --}}
         {{-- TIMELINE --}}
-        {{-- ===================================================== --}}
-
         <section
             class="flex-1 min-w-0 bg-gray-800 p-4"
         >
@@ -479,14 +439,8 @@
 </div>
 
 
-
-{{-- ============================================================= --}}
 {{-- JAVASCRIPT --}}
-{{-- ============================================================= --}}
-
 <script src="https://cdn.jsdelivr.net/npm/interactjs/dist/interact.min.js"></script>
-
-
 <script>
 
     window.editorConfig = {
@@ -500,20 +454,13 @@
     };
 
 </script>
-
-
 <script src="{{ asset('js/editor.js') }}"></script>
-
-
 <script>
 
 document.addEventListener('DOMContentLoaded', function () {
 
 
-    // =========================================================
     // SET UKURAN STAGE
-    // =========================================================
-
     const stage = document.getElementById('stage');
 
     if (stage) {
@@ -530,11 +477,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     }
 
-
-    // =========================================================
     // RENDER SLOT
-    // =========================================================
-
     document.querySelectorAll('.slot').forEach(function (slot) {
 
         const x =
@@ -562,11 +505,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     });
 
-
-    // =========================================================
     // RENDER SAVED CONTENT
-    // =========================================================
-
     document.querySelectorAll('.stage-content').forEach(function (content) {
 
         const x =
