@@ -27,13 +27,19 @@
 
         {{-- TAB BUTTON --}}
         <div style="margin-bottom:25px; display:flex; gap:15px;">
-            <button onclick="showTab('konten')" id="btnKonten" style="background:white;color:#0B1E3D;padding:8px 18px;border-radius:8px;border:none;cursor:pointer;">
+            <button onclick="showTab('konten')" id="btnKonten" style="background:white;color:#0B1E3D;padding:8px 18px;border-radius:8px;border:1px solid white;cursor:pointer;">
                 Perizinan Konten
             </button>
 
             <button onclick="showTab('kategori')" id="btnKategori" style="background:transparent;color:white;padding:8px 18px;border-radius:8px;border:1px solid white;cursor:pointer;">
                 Kategori
-        </button>
+            </button>
+
+            <button
+                onclick="showTab('tema')" id="btnTema"
+                style="background:transparent;color:white;padding:8px 18px;border-radius:8px;border:1px solid white;cursor:pointer;">
+                Tema
+            </button>
         </div>
 
         {{-- TAB KONTEN --}}
@@ -319,6 +325,204 @@
             </table>
 
         </div>
+
+        {{-- TAB TEMA --}}
+        <div id="tabTema" style="display:none;">
+
+            {{-- FORM TAMBAH TEMA --}}
+            <div style="margin-bottom:20px;">
+
+                <form
+                    action="{{ route('admin.themes.store') }}"
+                    method="POST"
+                    style="display:flex; gap:10px;"
+                >
+
+                    @csrf
+
+                    <input
+                        type="text"
+                        name="name"
+                        placeholder="Nama tema"
+                        required
+                        class="flex-1 bg-[#0A192F]
+                            border border-white/20
+                            rounded-lg px-4 py-2
+                            text-white"
+                    >
+
+                    <input
+                        type="text"
+                        name="description"
+                        placeholder="Deskripsi tema"
+                        class="flex-1 bg-[#0A192F]
+                            border border-white/20
+                            rounded-lg px-4 py-2
+                            text-white"
+                    >
+
+                    <button
+                        type="submit"
+                        class="bg-cyan-400
+                            text-[#0A192F]
+                            px-6 py-2
+                            rounded-lg
+                            font-semibold
+                            hover:bg-cyan-300
+                            transition"
+                    >
+                        + Tambah
+                    </button>
+
+                </form>
+
+            </div>
+
+
+            {{-- TABEL TEMA --}}
+            <table
+                style="width:100%;color:white;border-collapse:collapse;"
+            >
+
+                <thead>
+
+                    <tr
+                        style="border-bottom:1px solid rgba(255,255,255,0.2);"
+                    >
+
+                        <th style="padding:10px;text-align:left;">
+                            Nama
+                        </th>
+
+                        <th style="padding:10px;text-align:left;">
+                            Deskripsi
+                        </th>
+
+                        <th style="padding:10px;text-align:center;">
+                            Aksi
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+                    @forelse($themes as $theme)
+
+                        <tr
+                            class="border-b
+                                border-white/10
+                                hover:bg-white/5"
+                        >
+
+                            <form
+                                action="{{ route('admin.themes.update', $theme->theme_id) }}"
+                                method="POST"
+                            >
+
+                                @csrf
+                                @method('PATCH')
+
+                                <td style="padding:10px;">
+
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value="{{ $theme->name }}"
+                                        required
+                                        class="w-full
+                                            bg-[#0A192F]
+                                            border border-white/20
+                                            rounded-lg
+                                            px-4 py-2
+                                            text-white"
+                                    >
+
+                                </td>
+
+
+                                <td style="padding:10px;">
+
+                                    <input
+                                        type="text"
+                                        name="description"
+                                        value="{{ $theme->description }}"
+                                        class="w-full
+                                            bg-[#0A192F]
+                                            border border-white/20
+                                            rounded-lg
+                                            px-4 py-2
+                                            text-white"
+                                    >
+
+                                </td>
+
+
+                                <td
+                                    style="padding:10px;text-align:center;"
+                                >
+
+                                    <button
+                                        type="submit"
+                                        class="px-3 py-2
+                                            bg-yellow-400
+                                            text-black
+                                            rounded-md
+                                            text-sm"
+                                    >
+                                        Edit
+                                    </button>
+
+                            </form>
+
+
+                                    <form
+                                        action="{{ route('admin.themes.destroy', $theme->theme_id) }}"
+                                        method="POST"
+                                        style="display:inline;"
+                                        onsubmit="return confirm('Yakin hapus tema ini?')"
+                                    >
+
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            class="px-3 py-2
+                                                bg-red-500
+                                                text-white
+                                                rounded-md
+                                                text-sm"
+                                        >
+                                            Hapus
+                                        </button>
+
+                                    </form>
+
+                                </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+
+                            <td
+                                colspan="3"
+                                style="padding:20px;text-align:center;"
+                            >
+                                Belum ada tema
+                            </td>
+
+                        </tr>
+
+                    @endforelse
+
+                </tbody>
+
+            </table>
+
+        </div>
     </div>
 </div>
 
@@ -344,30 +548,65 @@
     });
 
     function showTab(tab) {
+
         const konten = document.getElementById('tabKonten');
         const kategori = document.getElementById('tabKategori');
+        const tema = document.getElementById('tabTema');
+
         const btnKonten = document.getElementById('btnKonten');
         const btnKategori = document.getElementById('btnKategori');
+        const btnTema = document.getElementById('btnTema');
 
-        if(tab === 'konten') {
+
+        // Sembunyikan semua tab
+        konten.style.display = 'none';
+        kategori.style.display = 'none';
+        tema.style.display = 'none';
+
+
+        // Reset semua tombol
+        btnKonten.style.background = 'transparent';
+        btnKonten.style.color = 'white';
+
+        btnKategori.style.background = 'transparent';
+        btnKategori.style.color = 'white';
+
+        btnTema.style.background = 'transparent';
+        btnTema.style.color = 'white';
+
+
+        // TAB KONTEN
+        if (tab === 'konten') {
+
             konten.style.display = 'block';
-            kategori.style.display = 'none';
 
             btnKonten.style.background = 'white';
             btnKonten.style.color = '#0B1E3D';
 
-            btnKategori.style.background = 'transparent';
-            btnKategori.style.color = 'white';
-        } else {
-            konten.style.display = 'none';
+        }
+
+
+        // TAB KATEGORI
+        else if (tab === 'kategori') {
+
             kategori.style.display = 'block';
 
             btnKategori.style.background = 'white';
             btnKategori.style.color = '#0B1E3D';
 
-            btnKonten.style.background = 'transparent';
-            btnKonten.style.color = 'white';
         }
+
+
+        // TAB TEMA
+        else if (tab === 'tema') {
+
+            tema.style.display = 'block';
+
+            btnTema.style.background = 'white';
+            btnTema.style.color = '#0B1E3D';
+
+        }
+
     }
 </script>
 

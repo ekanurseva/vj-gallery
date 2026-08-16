@@ -119,7 +119,20 @@ Route::middleware(['auth','role:admin'])
     Route::patch('categories/{category}',
         [CategoryController::class,'update'])
         ->name('categories.update');
-    });
+
+    Route::post('themes',
+        [ContentManagementController::class, 'storeTheme'])
+        ->name('themes.store');
+
+    Route::patch('themes/{theme}',
+        [ContentManagementController::class, 'updateTheme'])
+        ->name('themes.update');
+
+    Route::delete('themes/{theme}',
+        [ContentManagementController::class, 'destroyTheme'])
+        ->name('themes.destroy');
+
+    });    
 
 Route::middleware(['auth', 'role:vj'])
     ->prefix('vj')

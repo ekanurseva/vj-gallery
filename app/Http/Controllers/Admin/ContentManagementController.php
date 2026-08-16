@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Category;
+use App\Models\Theme;
 use App\Models\Content;
 
 class ContentManagementController extends Controller
@@ -14,6 +15,8 @@ class ContentManagementController extends Controller
         $categories = Category::all();
 
         $query = Content::with('user','category')->latest();
+
+        $themes = Theme::orderBy('name')->get();
 
         // Search Judul
         if ($request->search) {
@@ -27,7 +30,50 @@ class ContentManagementController extends Controller
 
         $contents = $query->get();
 
-        return view('admin.contents.index', compact('categories','contents'));
+        return view('admin.contents.index', compact('categories','contents', 'themes'));
+    }
+
+    public function storeTheme(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:themes,name',
+            'description' => 'nullable|string',
+        ]);
+
+        Theme::create([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()
+            ->route('admin.contents.index')
+            ->with('success', 'Tema berhasil ditambahkan.');
+    }
+
+    public function updateTheme(Request $request, Theme $theme)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255|unique:themes,name,' . $theme->theme_id . ',theme_id',
+            'description' => 'nullable|string',
+        ]);
+
+        $theme->update([
+            'name' => $request->name,
+            'description' => $request->description,
+        ]);
+
+        return redirect()
+            ->route('admin.contents.index')
+            ->with('success', 'Tema berhasil diperbarui.');
+    }
+
+    public function destroyTheme(Theme $theme)
+    {
+        $theme->delete();
+
+        return redirect()
+            ->route('admin.contents.index')
+            ->with('success', 'Tema berhasil dihapus.');
     }
 
     public function approve(Content $content)
