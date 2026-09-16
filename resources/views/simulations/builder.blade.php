@@ -258,6 +258,7 @@
 
                         <div
                             class="stage-content absolute group"
+                            data-instance-id="{{ $item->sim_content_id }}"
                             data-content-id="{{ $item->content_id }}"
                             data-title="{{ $item->content->title }}"
                             data-type="{{ $item->content->type }}"

@@ -55,7 +55,15 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const div = document.createElement('div');
+
         div.classList.add('stage-content');
+
+        div.dataset.instanceId =
+            'instance_' +
+            Date.now() +
+            '_' +
+            Math.random().toString(36).substring(2, 9);
+
         div.dataset.contentId = contentId;
         div.dataset.slotId = slotId;
         div.dataset.title = title;
@@ -343,30 +351,50 @@ document.addEventListener('DOMContentLoaded', function () {
     function refreshLayerPanel() {
 
         const panel = document.getElementById('layerPanel');
+
         panel.innerHTML = '';
 
-        let items = Array.from(document.querySelectorAll('.stage-content'));
-
-        // urut berdasarkan zIndex tertinggi dulu
-        items.sort((a,b) =>
-            parseInt(b.style.zIndex || 1) - parseInt(a.style.zIndex || 1)
+        let items = Array.from(
+            document.querySelectorAll('.stage-content')
         );
 
-        items.forEach(el => {
+        items.sort((a, b) =>
+            parseInt(b.style.zIndex || 1) -
+            parseInt(a.style.zIndex || 1)
+        );
+
+        items.forEach((el, index) => {
 
             const div = document.createElement('div');
-            div.className = 'layer-item bg-gray-700 p-2 rounded flex justify-between items-center text-sm cursor-move';
-            div.dataset.contentId = el.dataset.contentId;
+
+            div.className =
+                'layer-item bg-gray-700 p-2 rounded flex justify-between items-center text-sm cursor-move';
+
+            /* Gunakan ID instance, bukan content_id */
+
+            div.dataset.instanceId =
+                el.dataset.instanceId;
 
             let icon = '🖼️';
-            if(el.querySelector('video')) icon = '🎬';
+
+            if(el.querySelector('video')){
+                icon = '🎬';
+            }
 
             div.innerHTML = `
-                <span>${icon} ${el.dataset.title}</span>
-                <button class="delete-layer text-red-400 text-xs">✕</button>
+                <span>
+                    ${icon} ${el.dataset.title}
+                </span>
+
+                <button
+                    class="delete-layer text-red-400 text-xs"
+                >
+                    ✕
+                </button>
             `;
 
             panel.appendChild(div);
+
         });
 
         enableLayerDrag();
@@ -375,19 +403,26 @@ document.addEventListener('DOMContentLoaded', function () {
     function autoReindexLayers(){
 
         const panelItems = Array.from(
-            document.querySelectorAll('#layerPanel .layer-item')
+            document.querySelectorAll(
+                '#layerPanel .layer-item'
+            )
         );
 
         panelItems.forEach((panelItem, index) => {
 
-            const contentId = panelItem.dataset.contentId;
+            const instanceId =
+                panelItem.dataset.instanceId;
 
-            const stageEl = document.querySelector(
-                `.stage-content[data-content-id="${contentId}"]`
-            );
+            const stageEl =
+                document.querySelector(
+                    `.stage-content[data-instance-id="${instanceId}"]`
+                );
 
             if(stageEl){
-                stageEl.style.zIndex = panelItems.length - index;
+
+                stageEl.style.zIndex =
+                    panelItems.length - index;
+
             }
 
         });
@@ -399,11 +434,52 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const panel = document.getElementById('audioPanel');
 
-        let existing = panel.querySelector(
-            `.audio-item[data-content-id="${contentId}"]`
-        );
+        function addAudioTrack(contentId, title, path){
 
-        if(existing) return;
+        const panel = document.getElementById('audioPanel');
+
+        let div = document.createElement('div');
+
+        div.className =
+            'audio-item bg-gray-700 p-2 rounded cursor-move flex justify-between items-center';
+
+        div.innerHTML = `
+            <span>🎵 ${title}</span>
+            <button class="delete-audio text-red-500 text-xs">
+                ✕
+            </button>
+        `;
+
+        div.dataset.contentId = contentId;
+        div.dataset.title = title;
+        div.dataset.startTime = 0;
+        div.dataset.duration = 10;
+
+        const audio = document.createElement('audio');
+
+        audio.src = '/storage/' + path;
+        audio.preload = 'auto';
+        audio.muted = false;
+        audio.volume = 1;
+        audio.style.display = 'none';
+
+        audio.addEventListener('loadedmetadata', function(){
+
+            div.dataset.duration =
+                audio.duration.toFixed(2);
+
+            renderTimeline();
+
+        });
+
+        div.appendChild(audio);
+
+        panel.appendChild(div);
+
+        enableAudioDrag();
+
+        renderTimeline();
+    }
 
         let div = document.createElement('div');
         div.className = 'audio-item bg-gray-700 p-2 rounded cursor-move flex justify-between items-center';
@@ -614,18 +690,27 @@ document.addEventListener('DOMContentLoaded', function () {
     document.addEventListener('click', function(e){
 
         // DELETE DARI LAYER PANEL
-        if(e.target.classList.contains('delete-layer')){
+       if(e.target.classList.contains('delete-layer')){
 
-            const layerItem = e.target.closest('.layer-item');
-            const contentId = layerItem.dataset.contentId;
+            const layerItem =
+                e.target.closest('.layer-item');
 
-            const stageEl = document.querySelector(
-                `.stage-content[data-content-id="${contentId}"]`
-            );
+            if(!layerItem) return;
+
+            const instanceId =
+                layerItem.dataset.instanceId;
+
+            const stageEl =
+                document.querySelector(
+                    `.stage-content[data-instance-id="${instanceId}"]`
+                );
 
             if(stageEl){
+
                 deleteStageContent(stageEl);
+
             }
+
         }
 
         // DELETE AUDIO
