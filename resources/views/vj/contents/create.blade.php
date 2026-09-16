@@ -8,6 +8,19 @@
 
     <div class="bg-white/5 border border-white/10 rounded-xl px-20 py-12 max-w-5xl mx-auto">
         <form action="{{ route('vj.contents.store') }}" method="POST" enctype="multipart/form-data">
+
+            @if ($errors->any())
+            <div class="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+                <p class="font-semibold">Upload gagal:</p>
+
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+
             @csrf
             <input type="text" name="title" placeholder="Judul karya" class="w-full bg-[#0A192F] border border-white/20 rounded-lg px-4 mb-4 py-2 text-white">
             
