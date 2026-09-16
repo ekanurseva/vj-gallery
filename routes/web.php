@@ -217,3 +217,7 @@ Route::prefix('admin')
     });
 
 require __DIR__.'/auth.php';
+
+Route::get('/test-error', function () {
+    abort(500);
+});

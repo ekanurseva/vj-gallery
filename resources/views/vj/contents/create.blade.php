@@ -115,6 +115,10 @@
                         Gambar, video, atau audio
                     </span>
 
+                    <span class="text-xs text-gray-500 mt-1">
+                        Maksimal 50 MB • Durasi maksimal 60 detik
+                    </span>
+
                 </label>
 
                 <input

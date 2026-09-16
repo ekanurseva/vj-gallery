@@ -8,8 +8,10 @@ use App\Models\Content;
 use App\Models\Category;
 use App\Models\Theme;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use FFMpeg\FFProbe;
-
+use Throwable;
 class AdminKaryaController extends Controller
 {
     /**
@@ -74,39 +76,76 @@ class AdminKaryaController extends Controller
      */
     public function store(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi Input Dasar
+        |--------------------------------------------------------------------------
+        */
+
         $request->validate([
             'title' => 'required|string|max:255',
-            'category_id' => 'required|exists:categories,category_id',
-            'file' => 'required|file',
-            'description' => 'nullable|string',
-            'theme_ids' => 'nullable|array',
-            'theme_ids.*' => 'exists:themes,theme_id',
+
+            'category_id' =>
+                'required|exists:categories,category_id',
+
+            'file' =>
+                'required|file|max:51200|mimes:
+                jpg,jpeg,png,gif,webp,
+                mp4,webm,mov,
+                mp3,wav,ogg',
+
+            'description' =>
+                'nullable|string',
+
+            'theme_ids' =>
+                'nullable|array',
+
+            'theme_ids.*' =>
+                'exists:themes,theme_id',
+
+        ], [
+
+            'title.required' =>
+                'Judul karya wajib diisi.',
+
+            'title.max' =>
+                'Judul karya maksimal 255 karakter.',
+
+            'category_id.required' =>
+                'Kategori karya wajib dipilih.',
+
+            'category_id.exists' =>
+                'Kategori yang dipilih tidak valid.',
+
+            'file.required' =>
+                'File karya wajib dipilih.',
+
+            'file.max' =>
+                'Ukuran file terlalu besar. Maksimal 50 MB.',
+
+            'file.mimes' =>
+                'Format file tidak didukung. Gunakan JPG, PNG, GIF, WEBP, MP4, WEBM, MOV, MP3, WAV, atau OGG.',
+
+            'theme_ids.*.exists' =>
+                'Tema yang dipilih tidak valid.',
+
         ]);
 
 
         /*
         |--------------------------------------------------------------------------
-        | Upload File
+        | Ambil File
         |--------------------------------------------------------------------------
         */
 
         $file = $request->file('file');
-
-        $path = $file->store(
-            'contents',
-            'public'
-        );
-
-        $fullPath = storage_path(
-            'app/public/' . $path
-        );
 
         $mime = $file->getMimeType();
 
 
         /*
         |--------------------------------------------------------------------------
-        | Menentukan Tipe Konten
+        | Tentukan Tipe Konten
         |--------------------------------------------------------------------------
         */
 
@@ -127,14 +166,16 @@ class AdminKaryaController extends Controller
             return back()
                 ->withInput()
                 ->withErrors([
-                    'file' => 'Format file tidak didukung.'
+                    'file' =>
+                        'Format file tidak didukung.'
                 ]);
+
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Metadata Konten
+        | Metadata Awal
         |--------------------------------------------------------------------------
         */
 
@@ -145,135 +186,203 @@ class AdminKaryaController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | IMAGE
+        | Validasi IMAGE
         |--------------------------------------------------------------------------
         */
 
         if ($type === 'image') {
 
-            $imageSize = getimagesize($fullPath);
+            $imageSize = @getimagesize(
+                $file->getRealPath()
+            );
 
-            if ($imageSize) {
+            if (!$imageSize) {
 
-                $width = $imageSize[0];
-                $height = $imageSize[1];
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'file' =>
+                            'File gambar tidak dapat dibaca atau rusak.'
+                    ]);
 
+            }
+
+            $width = $imageSize[0];
+            $height = $imageSize[1];
+
+
+            // Batas dimensi gambar
+            if (
+                $width > 3840 ||
+                $height > 2160
+            ) {
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'file' =>
+                            'Dimensi gambar terlalu besar. Maksimal 3840 x 2160 piksel.'
+                    ]);
+
+            }
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Validasi VIDEO / AUDIO
+        |--------------------------------------------------------------------------
+        */
+
+        if (
+            $type === 'video' ||
+            $type === 'audio'
+        ) {
+
+            try {
+                $ffprobe = FFProbe::create([
+                    'ffmpeg.binaries'  => 'C:/ffmpeg/bin/ffmpeg.exe',
+                    'ffprobe.binaries' => 'C:/ffmpeg/bin/ffprobe.exe',
+                    'timeout'          => 60,
+                ]);
+
+                $duration = $ffprobe
+                    ->format($file->getRealPath())
+                    ->get('duration');
+
+                if ($duration === null) {
+                    throw ValidationException::withMessages([
+                        'file' => 'Durasi video tidak dapat dibaca. Pastikan file video tidak rusak.',
+                    ]);
+                }
+
+                $duration = (int) round((float) $duration);
+
+                if ($duration > 300) {
+                    throw ValidationException::withMessages([
+                        'file' => 'Durasi video terlalu panjang. Maksimal durasi video adalah 5 menit.',
+                    ]);
+                }
+            } catch (ValidationException $e) {
+                return back()
+                    ->withInput()
+                    ->withErrors($e->errors());
+            } catch (Throwable $e) {
+                report($e);
+
+                return back()
+                    ->withInput()
+                    ->withErrors([
+                        'file' => 'Video gagal diproses. Pastikan format dan ukuran video sesuai, lalu coba lagi.',
+                    ]);
             }
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | FFPROBE
+        | Simpan File
         |--------------------------------------------------------------------------
         */
 
-        if ($type === 'video' || $type === 'audio') {
+        try {
 
-            $ffprobe = FFProbe::create([
-                'ffmpeg.binaries' =>
-                    'C:/ffmpeg/bin/ffmpeg.exe',
+            $path = $file->store(
+                'contents',
+                'public'
+            );
 
-                'ffprobe.binaries' =>
-                    'C:/ffmpeg/bin/ffprobe.exe',
+        } catch (Throwable $e) {
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'file' =>
+                        'File gagal disimpan. Silakan coba kembali.'
+                ]);
+
+        }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Simpan Data Content
+        |--------------------------------------------------------------------------
+        */
+
+        try {
+
+            $content = Content::create([
+
+                'title' =>
+                    $request->title,
+
+                'category_id' =>
+                    $request->category_id,
+
+                'user_id' =>
+                    Auth::id(),
+
+                'file_path' =>
+                    $path,
+
+                'width' =>
+                    $width,
+
+                'height' =>
+                    $height,
+
+                'duration' =>
+                    $duration !== null
+                        ? round($duration)
+                        : null,
+
+                'description' =>
+                    $request->description,
+
+                'type' =>
+                    $type,
+
+                'file_size' =>
+                    $file->getSize(),
+
+                // Karya Admin langsung disetujui
+                'status' =>
+                    'approved',
+
             ]);
 
 
             /*
             |--------------------------------------------------------------------------
-            | Duration
+            | Simpan Relasi Tema
             |--------------------------------------------------------------------------
             */
 
-            $duration = $ffprobe
-                ->format($fullPath)
-                ->get('duration');
+            $content->themes()->sync(
+                $request->input('theme_ids', [])
+            );
 
 
-            /*
-            |--------------------------------------------------------------------------
-            | VIDEO DIMENSION
-            |--------------------------------------------------------------------------
-            */
+        } catch (Throwable $e) {
 
-            if ($type === 'video') {
+            // Hapus file jika database gagal menyimpan
+            Storage::disk('public')->delete($path);
 
-                $videoStream = $ffprobe
-                    ->streams($fullPath)
-                    ->videos()
-                    ->first();
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'file' =>
+                        'Terjadi kesalahan saat menyimpan karya. Silakan coba kembali.'
+                ]);
 
-                if ($videoStream) {
-
-                    $width = $videoStream->get('width');
-                    $height = $videoStream->get('height');
-
-                }
-            }
         }
 
 
         /*
         |--------------------------------------------------------------------------
-        | Simpan Content
-        |--------------------------------------------------------------------------
-        */
-
-        $content = Content::create([
-            'title' => $request->title,
-
-            'category_id' =>
-                $request->category_id,
-
-            'user_id' =>
-                Auth::id(),
-
-            'file_path' =>
-                $path,
-
-            'width' =>
-                $width,
-
-            'height' =>
-                $height,
-
-            'duration' =>
-                $duration
-                    ? round($duration)
-                    : null,
-
-            'description' =>
-                $request->description,
-
-            'type' =>
-                $type,
-
-            'file_size' =>
-                $file->getSize(),
-
-            // Konten Admin langsung disetujui
-            'status' =>
-                'approved',
-        ]);
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Simpan Tema Konten
-        |--------------------------------------------------------------------------
-        |
-        | theme_ids berasal dari checkbox tema pada form.
-        |
-        */
-
-        $content->themes()->sync(
-            $request->input('theme_ids', [])
-        );
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Redirect
+        | Berhasil
         |--------------------------------------------------------------------------
         */
 
@@ -283,8 +392,8 @@ class AdminKaryaController extends Controller
                 'success',
                 'Karya berhasil diupload!'
             );
-    }
 
+    }
 
     /**
      * Menghapus karya

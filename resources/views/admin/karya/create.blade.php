@@ -10,6 +10,18 @@
 
     <div class="bg-white/5 border border-white/10 rounded-xl px-20 py-12 max-w-5xl mx-auto">
 
+        @if ($errors->any())
+            <div class="mb-4 rounded-lg bg-red-100 p-4 text-red-700">
+                <p class="font-semibold">Upload gagal:</p>
+
+                <ul class="mt-2 list-disc pl-5">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
+        
         <form
             method="POST"
             action="{{ route('admin.karya.store') }}"
@@ -183,6 +195,10 @@
 
                     <span class="text-xs text-gray-500 mt-1">
                         Gambar, video, atau audio
+                    </span>
+
+                    <span class="text-xs text-gray-500 mt-1">
+                        Maksimal 50 MB • Durasi maksimal 60 detik
                     </span>
 
                 </label>
